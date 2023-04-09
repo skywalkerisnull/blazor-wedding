@@ -1,0 +1,61 @@
+﻿<div style="text-align: center;">
+    <a style="font-family: 'Dancing Script'; font-size: 70px">Ashley & Hayley</a>
+</div>
+
+<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <div class="container justify-content-center" style="font-family: 'Josefin Sans'">
+        <div class="@NavMenuCssClass justify-content-center" @onclick="ToggleNavMenu">
+            <ul class="navbar-nav justify-content-center">
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="home">
+                        <span aria-hidden="true"></span>
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="wedding">
+                        <span aria-hidden="true"></span> Wedding
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="venue">
+                        <span aria-hidden="true"></span> Venue
+                        @*Need to include transport to/from*@
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="schedule">
+                        <span aria-hidden="true"></span> Schedule
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="accomodation">
+                        <span aria-hidden="true"></span> Accomodation
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="dress-code">
+                        <span aria-hidden="true"></span> Dress Code
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="gifts">
+                        <span aria-hidden="true"></span> Gifts
+                    </NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    bool collapseNavMenu = true;
+
+    string baseMenuClass = "navbar-collapse d-sm-inline-flex flex-sm-row-reverse";
+
+    string NavMenuCssClass => baseMenuClass + (collapseNavMenu ? " collapse" : "");
+
+    void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

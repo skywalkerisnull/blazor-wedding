@@ -1,0 +1,32 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>Wedding</PageTitle>
+
+<header>
+    <NavMenu />
+</header>
+
+<div class="container">
+    <style>
+        .content {
+            display: flex;
+        }
+        .column {
+            flex: 1;
+        }
+    </style>
+    <div class="column">
+        <!-- First column content goes here -->
+    </div>
+    <div class="column">
+        <main role="main" class="pb-3">
+            @Body
+        </main>
+    </div>
+    <div class="column">
+        <!-- Third column content goes here -->
+    </div>
+</div>
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />

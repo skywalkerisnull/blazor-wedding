@@ -1,0 +1,32 @@
+﻿@using MudBlazor
+@using Wedding.Data.Entities
+
+<MudDialog>
+    <DialogContent>
+        <MudForm Model="@guest" OnValidSubmit="@OnValidSubmit">
+            <MudTextField @bind-Value="@guest.FirstName" Label="First Name" Required="true" />
+            <MudTextField @bind-Value="@guest.LastName" Label="Last Name" Required="true" />
+            @* Add more fields for the other properties of the Guest class here *@
+            <div style="text-align: right;">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" Type="submit">Save</MudButton>
+                &nbsp;
+                <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="@Cancel">Cancel</MudButton>
+            </div>
+        </MudForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private Guest guest = new Guest();
+
+    private void OnValidSubmit()
+    {
+        MudDialog.Close(DialogResult.Ok(guest));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

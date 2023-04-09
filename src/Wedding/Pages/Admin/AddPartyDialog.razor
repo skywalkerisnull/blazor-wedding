@@ -1,0 +1,41 @@
+﻿@using MudBlazor
+@using Wedding.Data.Entities
+
+<MudDialog>
+    <DialogContent>
+        <MudText>"New Party"</MudText>
+        <MudForm Model="@party" OnValidSubmit="@OnValidSubmit">
+            <MudTextField @bind-Value="@party.PartyName" Label="Party Name" Required="true" />
+            <MudTextField @bind-Value="@party.Address" Label="Address" />
+            <MudTextField @bind-Value="@party.Comments" Label="Comments" />
+            <MudSwitch @bind-Checked="@party.IsInvited" Label="Is Invited" />
+            <MudSwitch @bind-Checked="@party.InvitationOpened" Label="Invitation Opened" />
+            <MudSwitch @bind-Checked="@party.InvitationSent" Label="Invitation Sent" />
+            <MudTextField @bind-Value="@party.UniqueInviteId" Label="Unique Invite Id" Required="true" />
+            <MudDatePicker @bind-Date="@inviteSentDate" Label="Invite Sent Date" />
+            @* Add more fields for the other properties of the Party class here *@
+            <div style="text-align: right;">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" Type="submit">Save</MudButton>
+                &nbsp;
+                <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="@Cancel">Cancel</MudButton>
+            </div>
+        </MudForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private Party party = new Party();
+    private DateTime? inviteSentDate;
+
+    private void OnValidSubmit()
+    {
+        party.InviteSentDate = inviteSentDate ?? DateTime.MinValue;
+        MudDialog.Close(DialogResult.Ok(party));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
