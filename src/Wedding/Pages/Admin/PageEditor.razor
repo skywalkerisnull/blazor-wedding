@@ -45,12 +45,11 @@ else{
     private Data.Entities.Page entity;
 
     private Dictionary<string, object> editorConfig = new Dictionary<string, object>{
-        {"convert_newlines_to_brs", true},
         {"promotion", false},
         {"content_css", "/css/site.css"},
-        {"newline_behavior", "linebreak"},
-        {"plugins", "pagebreak autoresize media image link table lists advlist preview wordcount insertdatetime visualchars" },
-        {"toolbar", "visualblocks media image link insertdatetime | table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | visualchars preview"}
+        {"importcss_append", true},
+        {"plugins", "importcss pagebreak autoresize media image link table lists advlist preview wordcount insertdatetime visualchars" },
+        {"toolbar", "fontselect visualblocks media image link insertdatetime | table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | visualchars preview"}
     };
 
     protected override async Task OnInitializedAsync()
