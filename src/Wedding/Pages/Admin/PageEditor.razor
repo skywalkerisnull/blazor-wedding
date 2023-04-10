@@ -1,0 +1,88 @@
+﻿@page "/edit/{slug}"
+@using TinyMCE.Blazor
+@using Microsoft.EntityFrameworkCore;
+@inject ApplicationDbContext dbContext
+
+<h2>Edit Page: @slug</h2>
+<br />
+@if (entity == null) {
+    <p>Loading…</p>
+}
+else{
+    <EditForm Model=@entity OnValidSubmit="@SaveChanges"> 
+        <DataAnnotationsValidator /> 
+        <ValidationSummary />
+
+    <p>
+        <label for="content"></label>
+        <Editor Conf="@editorConfig"
+            ScriptSrc="/js/tinymce/tinymce.min.js"
+            id="content" @bind-Value="@entity.Content" 
+        Field="@(() => entity.Content)"/>
+    </p>
+        <MudButton 
+            Disabled="@_processing"
+            Variant="Variant.Filled" 
+            Color="Color.Primary" 
+            OnClick="@SaveChanges">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Saving</MudText>
+            }
+            else
+            {
+                <MudText>Save</MudText>
+            }
+        </MudButton>
+</EditForm>
+}
+
+@code {
+        [Parameter]
+        public string slug { get; set; }
+    private bool _processing = false;
+    private Data.Entities.Page entity;
+
+    private Dictionary<string, object> editorConfig = new Dictionary<string, object>{
+        {"convert_newlines_to_brs", true},
+        {"promotion", false},
+        {"newline_behavior", "linebreak"},
+        {"plugins", "media" },
+        {"toolbar", "media"}
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            entity = await dbContext.Pages.FirstOrDefaultAsync(x => x.Slug == slug);
+        }
+        finally
+        {
+            if (entity == null)
+            {
+                var now = DateTime.UtcNow;
+                entity = new Data.Entities.Page()
+                    {
+                        PageId = Guid.NewGuid(),
+                        Slug = slug,
+                        Title = slug,
+                        Content = "",
+                        DateCreated = now,
+                        DateModified = now,
+                    };
+                await dbContext.AddAsync<Data.Entities.Page>(entity);
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SaveChanges()
+    {
+        _processing = true;
+        await dbContext.SaveChangesAsync();
+        _processing = false;
+    }
+}

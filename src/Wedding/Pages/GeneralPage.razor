@@ -1,0 +1,26 @@
+﻿@page "/{Slug}"
+@using Microsoft.EntityFrameworkCore;
+@inject ApplicationDbContext dbContext
+
+@((MarkupString)pageContents)
+
+@code {
+    [Parameter]
+    public string Slug { get; set; }
+
+    private string pageContents = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var entity = await dbContext.Pages.FirstOrDefaultAsync(x => x.Slug == Slug);
+            pageContents = entity.Content;
+        }
+        catch
+        {
+            pageContents = "This page does not seem to exist";
+        }
+
+    }
+}

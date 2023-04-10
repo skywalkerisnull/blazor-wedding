@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Routing
 
 <PageTitle>Wedding</PageTitle>
 
@@ -18,15 +19,26 @@
     <div class="column">
         <!-- First column content goes here -->
     </div>
-    <div class="column">
-        <main role="main" class="pb-3">
+    <div class="main">
+        <div class="content">
+            @if (RouteData != null && RouteData.RouteValues.Count != 0)
+            {
+                var slug = RouteData.RouteValues["Slug"]?.ToString();
+            }
             @Body
-        </main>
+        </div>
     </div>
     <div class="column">
         <!-- Third column content goes here -->
     </div>
 </div>
-<MudThemeProvider />
+
+@*<MudThemeProvider />*@
 <MudDialogProvider />
 <MudSnackbarProvider />
+
+
+@code {
+    [CascadingParameter]
+    RouteData RouteData { get; set; }
+}
