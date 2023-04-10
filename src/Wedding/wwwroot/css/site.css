@@ -44,7 +44,11 @@
 }
 
 html, body {
-    font-family: 'Josefin Sans', Helvetica, Arial, sans-serif;
+    font-family: 'Josefin Sans', 'Dancing Script', 'Roboto', sans-serif;
+}
+
+h1 {
+    font-family: 'Dancing Script'
 }
 
 h1:focus {
