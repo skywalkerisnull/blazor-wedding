@@ -7,18 +7,39 @@
     <NavMenu />
 </header>
 
-<div class="container">
+<div class="wrapper">
     <style>
-        .container{
-            justify-content: center;
+        .wrapper {
+            display: flex;
+            flex-flow: row wrap;
+            font-weight: bold;
+            text-align: center;
         }
-        .column {
-            flex: 1;
+
+        .wrapper > * {
+            padding: 10px;
+            flex: 1 100%;
+        }
+
+        @@media all and (min-width: 600px) {
+          /* We tell both sidebars to share a row */
+          .aside { flex: 1 auto; }
+        }
+        @@media all and (min-width: 800px) {
+          /* We invert order of first sidebar and main
+           * And tell the main element to take twice as much width as the other two sidebars 
+           */
+          .main { flex: 3 0px; }
+          .aside-1 { order: 1; }
+          .main    { order: 2; }
+          .aside-2 { order: 3; }
+          .footer  { order: 4; }
+        }
+
+        body {
+            padding: 2em;
         }
     </style>
-    <div class="column">
-        <!-- First column content goes here -->
-    </div>
     <div class="main">
         <div class="content">
             @if (RouteData != null && RouteData.RouteValues.Count != 0)
@@ -28,8 +49,9 @@
             @Body
         </div>
     </div>
-    <div class="column">
-        <!-- Third column content goes here -->
+    <div class="aside aside-1">
+    </div>
+    <div class="aside aside-2">
     </div>
 </div>
 
