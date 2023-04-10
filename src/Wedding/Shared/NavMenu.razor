@@ -1,5 +1,7 @@
-﻿<div style="text-align: center;">
-    <a style="font-family: 'Dancing Script'; font-size: 70px" href="/">Ashley & Hayley</a>
+﻿@inject NavigationManager NavigationManager
+
+<div style="text-align: center;">
+    <a style="font-family: 'Dancing Script'; font-size: 70px" href="" @onclick="@(() => NavigationManager.NavigateTo("/"))">Ashley & Hayley</a>
 </div>
 
 <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -12,33 +14,33 @@
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link text-dark" href="wedding">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/wedding"))">
                         <span aria-hidden="true"></span> Wedding
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link text-dark" href="venue">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/venue"))">
                         <span aria-hidden="true"></span> Venue
                         @*Need to include transport to/from*@
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link text-dark" href="schedule">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/schedule"))">
                         <span aria-hidden="true"></span> Schedule
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link text-dark" href="accomodation">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/accomodation"))">
                         <span aria-hidden="true"></span> Accomodation
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link text-dark" href="dress-code">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/dress-code"))">
                         <span aria-hidden="true"></span> Dress Code
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link text-dark" href="gifts">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/gifts"))">
                         <span aria-hidden="true"></span> Gifts
                     </NavLink>
                 </li>
