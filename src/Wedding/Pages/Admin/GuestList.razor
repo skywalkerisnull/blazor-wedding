@@ -1,0 +1,95 @@
+﻿@page "/guests/{PartyId:guid}"
+@using Wedding.Services
+@inject IPartyService partyService
+@inject IGuestService guestService
+@inject IDialogService dialogService
+
+<MudTable Items="@guests" Hover="true" Dense="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Guests for @party.PartyName</MudText> 
+        <MudSpacer/> 
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddGuest">Add Guest</MudButton>
+    </ToolBarContent> 
+    <HeaderContent>
+        <MudTh>First Name</MudTh> 
+        <MudTh>Last Name</MudTh> 
+        <MudTh>Attending</MudTh> 
+        <MudTh>Rehersal Dinner</MudTh> 
+        <MudTh>Age Bracket</MudTh> 
+        <MudTh>Actions</MudTh>
+    </HeaderContent> 
+    <RowTemplate Context="guest">
+        <MudTd DataLabel="First Name">@guest.FirstName</MudTd> 
+        <MudTd DataLabel="Last Name">@guest.LastName</MudTd> 
+        <MudTd DataLabel="Attending">
+            <MudSwitch Checked="@guest.IsAttending" Disabled="true"/>
+        </MudTd> 
+        <MudTd DataLabel="Rehersal Dinner">
+            <MudSwitch Checked="@guest.IsAttendingRehersalDinner" Disabled="true"/>
+        </MudTd> 
+        <MudTd DataLabel="Age Bracket">@guest.AgeBracket</MudTd> 
+        <MudTd DataLabel="Actions">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditGuest(guest))">Edit</MudButton> 
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteGuest(guest))">Delete</MudButton> 
+            <NavLink href="@($"/parties")">
+                 <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small">Back to Parties</MudButton>
+            </NavLink>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public Guid PartyId { get; set; }
+
+    private Party party;
+    private List<Guest> guests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        party = await partyService.GetByIdAsync(PartyId);
+        guests = await guestService.GetByPartyIdAsync(PartyId);
+    }
+
+    private async Task AddGuest()
+    {
+        var dialog = dialogService.Show<GuestForm>("Add Guest");
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var guest = (Guest)result.Data;
+            guest.GuestId = Guid.NewGuid();
+            guest.PartyId = PartyId;
+            await guestService.AddAsync(guest);
+            guests.Add(guest);
+            StateHasChanged();
+        }
+    }
+
+    private async Task EditGuest(Guest guest)
+    {
+        var dialog = dialogService.Show<GuestForm>("Edit Guest", new DialogParameters { ["Guest"] = guest });
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var updatedGuest = (Guest)result.Data;
+            await guestService.UpdateAsync(updatedGuest);
+            var index = guests.IndexOf(guest);
+            guests[index] = updatedGuest;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteGuest(Guest guest)
+    {
+        bool? result = await dialogService.ShowMessageBox(
+            "Confirm Delete",
+            $"Are you sure you want to delete {guest.FirstName} {guest.LastName}?",
+            yesText: "Delete", cancelText: "Cancel");
+        if (result == true)
+        {
+            await guestService.DeleteAsync(guest);
+            guests.Remove(guest);
+            StateHasChanged();
+        }
+    }
+}

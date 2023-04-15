@@ -1,113 +1,81 @@
-﻿@page "/guests"
-@using MudBlazor
+﻿@*@page "/guests"
 @using Wedding.Services
 
 @inject IGuestService GuestService
 @inject ISnackbar Snackbar
 
 <MudGrid>
-    <MudItem xs="12" sm="6">
-        <MudText Typo="Typo.h4">Guests</MudText>
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="p-4">
+            <MudText Typo="Typo.h5">Create Guest</MudText>
+            <EditForm Model="@guest" OnValidSubmit="@CreateGuest">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <MudTextField @bind-Value="@guest.FirstName" Label="First Name" Required="true" />
+                <MudTextField @bind-Value="@guest.LastName" Label="Last Name" Required="true" />
+                <MudSwitch @bind-Checked="@guest.IsAttending" Label="Is Attending?" />
+                <MudSwitch @bind-Checked="@guest.IsAttendingRehersalDinner" Label="Is Attending Rehersal Dinner?" />
+                <MudDatePicker @bind-Date="@guest.InviteAccepted" Label="Invite Accepted Date" />
+                <MudDatePicker @bind-Date="@guest.InvitationOpened" Label="Invitation Opened Date" />
+                <MudSelect @bind-Value="@guest.AgeBracket" Label="Age Bracket">
+                    @foreach (var ageBracket in Enum.GetValues<AgeBracket>())
+                    {
+                        <MudSelectItem Value="@ageBracket">@ageBracket</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="List<CommonDietaryRequirements>" @bind-Value="@guest.CommonRequirements" Label="Common Dietary Requirements" MultiSelection="true">
+                    @foreach (var requirement in Enum.GetValues<CommonDietaryRequirements>())
+                    {
+                        <MudSelectItem Value="@new List<CommonDietaryRequirements> { requirement }">@requirement</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField @bind-Value="@guest.Allergies" Label="Allergies" />
+                <MudTextField @bind-Value="@guest.Other" Label="Other" />
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Create</MudButton>
+            </EditForm>
+        </MudPaper>
     </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddGuest">Add Guest</MudButton>
+    <MudItem xs="12" sm="6" md="8">
+        <MudPaper Class="p-4">
+            <MudText Typo="Typo.h5">Guest List</MudText>
+            <MudTable Items="@guests">
+                <HeaderContent>
+                    <MudTh>First Name</MudTh>
+                    <MudTh>Last Name</MudTh>
+                    <MudTh>Is Attending?</MudTh>
+                    <MudTh>Is Attending Rehersal Dinner?</MudTh>
+                    <MudTh>Invite Accepted Date</MudTh>
+                    <MudTh>Invitation Opened Date</MudTh>
+                    <MudTh>Age Bracket</MudTh>
+                    <MudTh>Common Dietary Requirements</MudTh>
+                    <MudTh>Allergies</MudTh>
+                    <MudTh>Other</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate Context="guest">
+                    <CellContent><span>@guest.FirstName</span></CellContent>
+                    <CellContent><span>@guest.LastName</span></CellContent>
+                    <CellContent><span>@(guest.IsAttending ?? false ? "Yes" : "No")</span></CellContent>
+                    <CellContent><span>@(guest.IsAttendingRehersalDinner ?? false ? "Yes" : "No")</span></CellContent>
+                    <CellContent><span>@(guest.InviteAccepted?.ToString("d") ?? "-")</span></CellContent>
+                    <CellContent><span>@(guest.InvitationOpened?.ToString("d") ?? "-")</span></CellContent>
+                    <CellContent><span>@guest.AgeBracket</span></CellContent>
+                    <CellContent><span>@string.Join(", ", guest.CommonRequirements)</span></CellContent>
+                    <CellContent><span>@(string.IsNullOrWhiteSpace(guest.Allergies) ? "-" : guest.Allergies)</span></CellContent>
+                    <CellContent><span>@(string.IsNullOrWhiteSpace(guest.Other) ? "-" : guest.Other)</span></CellContent>
+                    <CellContent>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => EditGuest(guest))">Edit</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => DeleteGuest(guest))">Delete</MudButton>
+                    </CellContent>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
     </MudItem>
 </MudGrid>
 
-<MudTable Items="@guests" Dense="true" Hover="true" PageSize=10 ServerData="@LoadData">
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.FirstName)">First Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.LastName)">Last Name</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.IsAttending)">Is Attending</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.IsAttendingRehersalDinner)">Is Attending Rehersal Dinner</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.InviteAccepted)">Invite Accepted</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.InvitationOpened)">Invitation Opened</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.AgeBracket)">Age Bracket</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.CommonRequirements)">Dietary Requirements</MudTableSortLabel></MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="guest">
-        <MudTd DataLabel="First Name">@guest.FirstName</MudTd>
-        <MudTd DataLabel="Last Name">@guest.LastName</MudTd>
-        <MudTd DataLabel="Is Attending">@guest.IsAttending?.ToString() ?? "Unknown"</MudTd>
-        <MudTd DataLabel="Is Attending Rehersal Dinner">@guest.IsAttendingRehersalDinner?.ToString() ?? "Unknown"</MudTd>
-        <MudTd DataLabel="Invite Accepted">@guest.InviteAccepted.Value.ToString("g")</MudTd>
-        <MudTd DataLabel="Invitation Opened">@guest.InvitationOpened.Value.ToString("g")</MudTd>
-        <MudTd DataLabel="Age Bracket">@guest.AgeBracket.ToString()</MudTd>
-        <MudTd DataLabel="Dietary Requirements">@guest.CommonRequirements?.ToString() ?? "None"</MudTd>
-        <MudTd DataLabel="Actions">
-            <div class="d-flex flex-row">
-                <div class="m-1"><button class="btn btn-primary" @onclick="@(() => EditGuest(guest))"><i class="fa fa-edit"></i></button></div>
-                <div class="m-1"><button class="btn btn-danger" @onclick="@(() => DeleteGuest(guest))"><i class="fa fa-trash"></i></button></div>
-            </div>            
-        </MudTd>        
-    </RowTemplate>    
-@*    <MudTable Items="@guests" Dense="true" Hover="true" RowsPerPage=10 ServerData="@LoadData">
-    <PagerContent>        
-        <div class="d-flex flex-row align-items-center justify-content-between">
-            Showing @tableState.Page * tableState.PageSize + 1 - @Math.Min(tableState.Page * tableState.PageSize + tableState.PageSize, totalItems) of @totalItems items
-            <div class="d-flex flex-row align-items-center justify-content-end">
-                <MudIconButton Icon="@Icons.Material.Filled.FirstPage" OnClick="@( () => mudTablePager.CurrentPage = 0)" Disabled="@(!mudTablePager.HasPreviousPage())" />
-                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="@( () => mudTablePager.CurrentPage--)" Disabled="@(!mudTablePager.HasPreviousPage())" />
-                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="@( () => mudTablePager.CurrentPage++)" Disabled="@(!mudTablePager.HasNextPage())" />
-                <MudIconButton Icon="@Icons.Material.Filled.LastPage" OnClick="@( () => mudTablePager.CurrentPage = mudTablePager.TotalPages - 1)" Disabled="@(!mudTablePager.HasNextPage())" />
-            </div>
-        </div>
-    </PagerContent>*@
-</MudTable>
-
-<MudDialog IsVisible="@showDialog" CloseButton="true" DisableBackdropClick="true">
-    <DialogContent>
-        <EditForm Model="@currentGuest" OnValidSubmit="SaveGuest">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="@currentGuest.FirstName" Label="First Name" Required="true"></MudTextField>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="@currentGuest.LastName" Label="Last Name" Required="true"></MudTextField>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudSwitch @bind-Checked="@currentGuest.IsAttending" Label="Is Attending"></MudSwitch>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudSwitch @bind-Checked="@currentGuest.IsAttendingRehersalDinner" Label="Is Attending Rehersal Dinner"></MudSwitch>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudDatePicker @bind-Date="@currentGuest.InviteAccepted" Label="Invite Accepted"></MudDatePicker>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudDatePicker @bind-Date="@currentGuest.InvitationOpened" Label="Invitation Opened"></MudDatePicker>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudSelect @bind-Value="@currentGuest.AgeBracket" Label="Age Bracket">
-                        @foreach (var ageBracket in Enum.GetValues<AgeBracket>())
-                        {
-                            <MudSelectItem Value="@ageBracket">@ageBracket.ToString()</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12">
-                    <MudSelect T="List<CommonDietaryRequirements>" @bind-Value="@currentGuest.CommonRequirements" Label="Dietary Requirements" MultiSelection="true">
-                        @foreach (var dietaryRequirement in Enum.GetValues<CommonDietaryRequirements>())
-                        {
-                            <MudSelectItem Value="@dietaryRequirement">@dietaryRequirement.ToString()</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-            </MudGrid>            
-        </EditForm>        
-    </DialogContent>
-    <DialogActions>
-        <MudButton Loading="@isSaving" OnClick="SaveGuest">Save</MudButton>        
-    </DialogActions>    
-</MudDialog>
-
 @code { 
     private List<Guest> guests = new List<Guest>();
+    private Guest guest = new Guest();
     private TableState tableState = new TableState();
     private int totalItems;
     private bool showDialog;
@@ -182,4 +150,4 @@
         //    await LoadData(tableState);
         //}
     }
-}
+}*@

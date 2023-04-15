@@ -1,25 +1,56 @@
-﻿using Wedding.Data.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using Wedding.Data;
+using Wedding.Data.Entities;
 
 namespace Wedding.Services
 {
     public class PartyService : IPartyService
     {
-        private static readonly List<Party> Parties = new List<Party>
-    {
-        new Party { PartyId = Guid.NewGuid(), PartyName = "Smith Family", Address = "123 Main Street", Comments = "No comments", IsInvited = true, InvitationOpened = true, InvitationSent = true, UniqueInviteId = "ABC123", InviteSentDate = DateTime.Now.AddDays(-14) },
-        new Party { PartyId = Guid.NewGuid(), PartyName = "Johnson Family", Address = "456 Elm Street", Comments = "No comments", IsInvited = true, InvitationOpened = false, InvitationSent = true, UniqueInviteId = "DEF456", InviteSentDate = DateTime.Now.AddDays(-10) },
-        new Party { PartyId = Guid.NewGuid(), PartyName = "Williams Family", Address = "789 Oak Street", Comments = "No comments", IsInvited = false, InvitationOpened = false, InvitationSent = false, UniqueInviteId = "GHI789", InviteSentDate = DateTime.MinValue }
-    };
-
-        public Task<List<Party>> GetPartiesAsync()
+        private readonly ApplicationDbContext _context;
+        public PartyService(ApplicationDbContext context)
         {
-            return Task.FromResult(Parties);
+            _context = context;
         }
 
-        public Task AddPartyAsync(Party party)
+        public async Task<List<Party>> GetAllAsync()
         {
-            Parties.Add(party);
-            return Task.CompletedTask;
+            var parties =  await _context.Party.ToListAsync();
+            return parties;
+        }
+
+        public async Task<Party> GetByIdAsync(Guid id)
+        {
+            return await _context.Party.FindAsync(id);
+        }
+
+        public async Task AddAsync(Party party)
+        {
+            _context.Party.Add(party);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Party party)
+        {
+            _context.Party.Update(party);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(Party party)
+        {
+            _context.Party.Remove(party);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<string> GenerateUniqueInviteIdAsync()
+        {
+            // This is a mock method to generate a random string
+            // You can replace it with your own logic
+            var random = new Random();
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var length = 8;
+            var inviteId = new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            return inviteId;
         }
     }
 }

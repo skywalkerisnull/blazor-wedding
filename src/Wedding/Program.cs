@@ -20,8 +20,8 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 
-builder.Services.AddScoped<IGuestService, GuestService>();
-builder.Services.AddScoped<IPartyService, PartyService>();
+builder.Services.AddTransient<IGuestService, GuestService>();
+builder.Services.AddTransient<IPartyService, PartyService>();
 
 
 builder.Services.AddMudServices();

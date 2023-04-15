@@ -1,4 +1,93 @@
-﻿@*@page "/parties"
+﻿@page "/parties"
+@using Wedding.Services
+@inject IPartyService partyService
+@inject IDialogService dialogService
+
+<MudTable Items="@parties" Hover="true" Dense="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Parties</MudText> 
+        <MudSpacer/> 
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddParty">Add Party</MudButton>
+    </ToolBarContent> 
+    <HeaderContent>
+        <MudTh>Name</MudTh> 
+        <MudTh>Address</MudTh> 
+        <MudTh>Comments</MudTh> 
+        <MudTh>Invited</MudTh> 
+        <MudTh>Sent</MudTh> 
+        <MudTh>Actions</MudTh>
+    </HeaderContent> 
+    <RowTemplate Context="party">
+        <MudTd DataLabel="Name">@party.PartyName</MudTd> 
+        <MudTd DataLabel="Address">@party.Address</MudTd> 
+        <MudTd DataLabel="Comments">@party.Comments</MudTd> 
+        <MudTd DataLabel="Invited">
+            <MudSwitch Checked="@party.IsInvited" Disabled="true"/>
+        </MudTd> <MudTd DataLabel="Sent">
+            <MudSwitch Checked="@party.InvitationSent" Disabled="true"/>
+        </MudTd> 
+        <MudTd DataLabel="Actions">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditParty(party))">Edit</MudButton> 
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteParty(party))">Delete</MudButton> 
+            <NavLink href="@($"/guests/{party.PartyId}")">
+                 <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small">Guests</MudButton>
+            </NavLink>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Party> parties;
+
+    protected override async Task OnInitializedAsync()
+    {
+        parties = await partyService.GetAllAsync();
+    }
+
+    private async Task AddParty()
+    {
+        var dialog = dialogService.Show<PartyForm>("Add Party");
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var party = (Party)result.Data;
+            await partyService.AddAsync(party);
+            parties.Add(party);
+            StateHasChanged();
+        }
+    }
+
+    private async Task EditParty(Party party)
+    {
+        var dialog = dialogService.Show<PartyForm>("Edit Party", new DialogParameters { ["Party"] = party });
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var updatedParty = (Party)result.Data;
+            await partyService.UpdateAsync(updatedParty);
+            var index = parties.IndexOf(party);
+            parties[index] = updatedParty;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteParty(Party party)
+    {
+        bool? result = await dialogService.ShowMessageBox(
+            "Confirm Delete",
+            $"Are you sure you want to delete {party.PartyName}?",
+            yesText: "Delete", cancelText: "Cancel");
+        if (result == true)
+        {
+            await partyService.DeleteAsync(party);
+            parties.Remove(party);
+            StateHasChanged();
+        }
+    }
+
+}
+
+@*@page "/parties"
 @using MudBlazor
 @using Wedding.Data.Entities
 @using Wedding.Services;

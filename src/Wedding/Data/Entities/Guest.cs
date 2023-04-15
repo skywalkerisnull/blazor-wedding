@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Wedding.Data.Entities
 {
@@ -19,6 +20,9 @@ namespace Wedding.Data.Entities
         public List<CommonDietaryRequirements> CommonRequirements { get; set; }
         public string? Allergies { get; set; }
         public string? Other { get; set; }
+
+        //[ForeignKey("Party")]
+        public Guid PartyId { get; set; }
     }
 
     public enum CommonDietaryRequirements

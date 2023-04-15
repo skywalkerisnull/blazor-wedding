@@ -1,0 +1,103 @@
+﻿@using Wedding.Services
+@inject IPartyService partyService
+
+<MudDialog>
+    <TitleContent>
+         <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent> 
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="First Name" @bind-Value="@guest.FirstName" For="@(() => guest.FirstName)"/>
+            </MudItem> 
+            <MudItem xs="12" sm="6">
+                 <MudTextField Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)"/>
+            </MudItem> 
+            <MudItem xs="12" sm="6">
+                 <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending"/>
+            </MudItem> 
+            <MudItem xs="12" sm="6">
+                 <MudSwitch Label="Rehersal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner"/>
+            </MudItem> 
+            <MudItem xs="12">
+                 <MudDatePicker Label="Invite Accepted" @bind-Date="@guest.InviteAccepted"/>
+            </MudItem> 
+            <MudItem xs="12">
+                 <MudDatePicker Label="Invitation Opened" @bind-Date="@guest.InvitationOpened"/>
+            </MudItem>
+            <MudItem xs="12">
+                <MudSelect Label="Age Bracket" @bind-Value="@guest.AgeBracket">
+                    @foreach (var ageBracket in Enum.GetValues<AgeBracket>())
+                    {
+                        <MudSelectItem Value="@ageBracket">@ageBracket</MudSelectItem>
+                    }
+                </MudSelect> </MudItem>
+            <MudItem xs="12">
+                <MudSelect 
+                    T="CommonDietaryRequirements"
+                    Label="Common Requirements" 
+                    MultiSelection="true" 
+                    @*@bind-Value="@guest.CommonRequirements"
+                    @bind-SelectedValues="@guest.CommonRequirements">*@
+                    @bind-Value="value"
+                    @bind-SelectedValues="options">
+                    @foreach (CommonDietaryRequirements item in Enum.GetValues(typeof(CommonDietaryRequirements)))
+                    {
+                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                    }
+                </MudSelect> 
+            </MudItem> 
+            <MudItem xs="12">
+                 <MudTextField Label="Allergies" @bind-Value="@guest.Allergies" For="@(() => guest.Allergies)"/>
+            </MudItem> <MudItem xs="12">
+                 <MudTextField Label="Other" @bind-Value="@guest.Other" For="@(() => guest.Other)"/>
+            </MudItem>
+            <MudItem xs="12">
+                <MudSelect Label="Party" @bind-Value="@guest.PartyId">
+                    @foreach (var party in parties)
+                    {
+                        <MudSelectItem Value="@party.PartyId">@party.PartyName</MudSelectItem>
+                    }
+                </MudSelect> </MudItem>
+        </MudGrid>
+    </DialogContent> 
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Save</MudButton> 
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="@Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string Title { get; set; }
+
+    [Parameter] public Guest Guest { get; set; }
+
+    private Guest guest = new Guest();
+    private List<Party> parties;
+
+    private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
+    private IEnumerable<CommonDietaryRequirements> options;// { get; set; } = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Guest != null)
+        {
+            guest = Guest;
+        }
+        parties = await partyService.GetAllAsync();
+        Console.WriteLine(parties.ToString());
+    }
+
+
+    private void Save()
+    {
+        MudDialog.Close(DialogResult.Ok(guest));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

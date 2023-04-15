@@ -4,7 +4,15 @@ namespace Wedding.Services
 {
     public interface IPartyService
     {
-        Task<List<Party>> GetPartiesAsync();
-        Task AddPartyAsync(Party party);
+        //Task<List<Party>> GetPartiesAsync();
+        //Task AddPartyAsync(Party party);
+
+        Task<List<Party>> GetAllAsync();
+
+        Task<Party> GetByIdAsync(Guid id);
+        Task AddAsync(Party party);
+        Task UpdateAsync(Party party);
+        Task DeleteAsync(Party party);
+        Task<string> GenerateUniqueInviteIdAsync();
     }
 }
