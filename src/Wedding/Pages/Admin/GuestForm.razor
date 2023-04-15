@@ -83,13 +83,6 @@
 
     private string DietaryMultiSelection(List<string> selectedValues)
     {
-        //var result = new List<CommonDietaryRequirements>();
-        //foreach (var value in selectedValues)
-        //{
-        //    CommonDietaryRequirements.TryParse(value, true, out CommonDietaryRequirements enumValue);
-        //    result.Add(enumValue);
-        //}
-        //return result;
         var text = string.Join(", ", selectedValues);
         Console.WriteLine(text);
         return text;

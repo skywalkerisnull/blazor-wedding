@@ -28,6 +28,13 @@ namespace Wedding.Services
             return await context.Party.FindAsync(id);
         }
 
+        public async Task<Party> GetByUniqueInviteIdAsync(string id)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Party.Include(p => p.Guests)
+            .FirstOrDefaultAsync(p => p.UniqueInviteId == id);
+        }
+
         public async Task AddAsync(Party party)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
@@ -38,6 +45,10 @@ namespace Wedding.Services
         public async Task UpdateAsync(Party party)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
+            foreach (var guests in party.Guests)
+            {
+                context.Guests.Update(guests);
+            }
             context.Party.Update(party);
             await context.SaveChangesAsync();
         }

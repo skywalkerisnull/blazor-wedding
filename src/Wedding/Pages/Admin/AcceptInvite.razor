@@ -1,0 +1,110 @@
+﻿@page "/invite/{UniqueInviteId}"
+@using Wedding.Models
+@using MudBlazor
+@using Wedding.Services
+@inject IPartyService partyService
+@inject IGuestService guestService
+@inject IJSRuntime jsRuntime
+
+<h1>Wedding Invitation</h1>
+
+@if (party == null)
+{
+    <p>Loading...</p>
+}
+else if (party.IsInvited == false)
+{
+    <p>Sorry, you are not invited to this wedding.</p>
+}
+else
+{
+    <MudPaper Class="p-4">
+        <MudText Variant="Variant.H5">Dear @party.PartyName,</MudText>
+        <MudText Variant="Variant.Body1">You are cordially invited to the wedding of Hayley & Ashley</MudText>
+        <MudText Variant="Variant.Body1">Please fill in the details below and click on the Accept button to confirm your attendance.</MudText>
+        <MudForm Model="@party">
+            <MudGrid Spacing="8">
+                @foreach (var guest in party.Guests)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <td>"@guest.FirstName @guest.LastName"</td>
+                        <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending" />
+                    <MudSelect 
+                    T="CommonDietaryRequirements"
+                    Label="Common Requirements"
+                    MultiSelectionTextFunc="DietaryMultiSelection"
+                    MultiSelection
+                    @bind-SelectedValues="options">
+                    @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
+                    {
+                        <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+                    }
+                </MudSelect> 
+                        <MudTextField Label="Allergies" @bind-Value="@guest.Allergies" />
+                        <MudTextField Label="Other" @bind-Value="@guest.Other" />
+                    </MudItem>
+                }
+            </MudGrid>
+            <br />
+            <div style="text-align: center;">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AcceptInviteMethod">Accept</MudButton>
+            </div>
+
+        </MudForm>
+        <div>
+            <add-to-calendar-button name="Ashley & Hayley's Wedding"
+                                    startDate="2024-01-06"
+                                    startTime="15:00"
+                                    endDate="2024-01-06"
+                                    endTime="23:30"
+                                    timeZone="Australia/Brisbane"
+                                    location="Preston Peak Winery Function Centre - 430 Preston Boundary Road, Preston Queensland 4352"
+                                    availability="busy"
+                                    options="'Apple','Google','Outlook.com','Yahoo','Microsoft365','iCal'"
+                                    listStyle="dropdown-static"
+                                    buttonStyle="date"
+                                    trigger="click">
+            </add-to-calendar-button>
+        </div>
+    </MudPaper>
+}
+
+@code {
+    [Parameter]
+    public string UniqueInviteId { get; set; }
+
+    private Party party;
+
+    private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
+    private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        party = await partyService.GetByUniqueInviteIdAsync(UniqueInviteId);
+        if (party != null && party.InvitationOpened == false)
+        {
+            party.InvitationOpened = true;
+            await partyService.UpdateAsync(party);
+        }
+    }
+
+    private string DietaryMultiSelection(List<string> selectedValues)
+    {
+        var text = string.Join(", ", selectedValues);
+        Console.WriteLine(text);
+        return text;
+    }
+
+    private async Task AcceptInviteMethod()
+    {
+        foreach (var guest in party.Guests)
+        {
+            if (guest.IsAttending == true)
+            {
+                guest.InviteAccepted = DateTime.UtcNow;
+            }
+            await guestService.UpdateAsync(guest);
+        }
+    }
+}

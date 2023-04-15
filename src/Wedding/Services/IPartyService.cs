@@ -10,6 +10,7 @@ namespace Wedding.Services
         Task<List<Party>> GetAllAsync();
 
         Task<Party> GetByIdAsync(Guid id);
+        Task<Party> GetByUniqueInviteIdAsync(string id);
         Task AddAsync(Party party);
         Task UpdateAsync(Party party);
         Task DeleteAsync(Party party);
