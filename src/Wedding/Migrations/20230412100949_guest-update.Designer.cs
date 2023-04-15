@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Wedding.Data;
@@ -11,9 +12,11 @@ using Wedding.Data;
 namespace Wedding.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230412100949_guest-update")]
+    partial class guestupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,6 +287,27 @@ namespace Wedding.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("Wedding.Data.Entities.DietaryRequirements", b =>
+                {
+                    b.Property<Guid>("DietaryRequirementsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Allergies")
+                        .HasColumnType("text");
+
+                    b.Property<int[]>("CommonRequirements")
+                        .IsRequired()
+                        .HasColumnType("integer[]");
+
+                    b.Property<string>("Other")
+                        .HasColumnType("text");
+
+                    b.HasKey("DietaryRequirementsId");
+
+                    b.ToTable("DietaryRequirements");
+                });
+
             modelBuilder.Entity("Wedding.Data.Entities.Guest", b =>
                 {
                     b.Property<Guid>("GuestId")
@@ -293,12 +317,8 @@ namespace Wedding.Migrations
                     b.Property<int>("AgeBracket")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Allergies")
-                        .HasColumnType("text");
-
-                    b.Property<int[]>("CommonRequirements")
-                        .IsRequired()
-                        .HasColumnType("integer[]");
+                    b.Property<Guid?>("DietaryRequirementsId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -320,13 +340,12 @@ namespace Wedding.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Other")
-                        .HasColumnType("text");
-
                     b.Property<Guid?>("PartyId")
                         .HasColumnType("uuid");
 
                     b.HasKey("GuestId");
+
+                    b.HasIndex("DietaryRequirementsId");
 
                     b.HasIndex("PartyId");
 
@@ -526,9 +545,15 @@ namespace Wedding.Migrations
 
             modelBuilder.Entity("Wedding.Data.Entities.Guest", b =>
                 {
+                    b.HasOne("Wedding.Data.Entities.DietaryRequirements", "DietaryRequirements")
+                        .WithMany()
+                        .HasForeignKey("DietaryRequirementsId");
+
                     b.HasOne("Wedding.Data.Entities.Party", null)
                         .WithMany("Guests")
                         .HasForeignKey("PartyId");
+
+                    b.Navigation("DietaryRequirements");
                 });
 
             modelBuilder.Entity("Wedding.Data.Entities.Post", b =>

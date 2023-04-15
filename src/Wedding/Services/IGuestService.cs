@@ -1,10 +1,15 @@
-﻿using Wedding.Data.Entities;
+﻿using MudBlazor;
+using Wedding.Data.Entities;
+using Wedding.Models;
 
 namespace Wedding.Services
 {
-    public interface IGuestService
+    interface IGuestService
     {
-        Task<List<Guest>> GetGuestsAsync();
-        Task AddGuestAsync(Guest guest);
+        Task<PagedResult<Guest>> GetPagedResultAsync(int skip, int take, string orderBy, SortDirection orderDirection);
+        Task<Guest> GetByIdAsync(Guid id);
+        Task AddAsync(Guest guest);
+        Task UpdateAsync(Guest guest);
+        Task DeleteAsync(Guid id);
     }
 }

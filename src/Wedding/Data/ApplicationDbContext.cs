@@ -12,9 +12,7 @@ namespace Wedding.Data
         }
 
         public DbSet<Party> Party { get; set; }
-        public DbSet<Guest> Guest { get; set; }
-        public DbSet<DietaryRequirements> DietaryRequirements { get; set; }
-
+        public DbSet<Guest> Guests { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Page> Pages { get; set; }
         public DbSet<Category> Categories { get; set; }

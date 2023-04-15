@@ -1,0 +1,185 @@
+﻿@page "/guests"
+@using MudBlazor
+@using Wedding.Services
+
+@inject IGuestService GuestService
+@inject ISnackbar Snackbar
+
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <MudText Typo="Typo.h4">Guests</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddGuest">Add Guest</MudButton>
+    </MudItem>
+</MudGrid>
+
+<MudTable Items="@guests" Dense="true" Hover="true" PageSize=10 ServerData="@LoadData">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.FirstName)">First Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.LastName)">Last Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.IsAttending)">Is Attending</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.IsAttendingRehersalDinner)">Is Attending Rehersal Dinner</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.InviteAccepted)">Invite Accepted</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.InvitationOpened)">Invitation Opened</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.AgeBracket)">Age Bracket</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Guest, object>(a => a.CommonRequirements)">Dietary Requirements</MudTableSortLabel></MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="guest">
+        <MudTd DataLabel="First Name">@guest.FirstName</MudTd>
+        <MudTd DataLabel="Last Name">@guest.LastName</MudTd>
+        <MudTd DataLabel="Is Attending">@guest.IsAttending?.ToString() ?? "Unknown"</MudTd>
+        <MudTd DataLabel="Is Attending Rehersal Dinner">@guest.IsAttendingRehersalDinner?.ToString() ?? "Unknown"</MudTd>
+        <MudTd DataLabel="Invite Accepted">@guest.InviteAccepted.Value.ToString("g")</MudTd>
+        <MudTd DataLabel="Invitation Opened">@guest.InvitationOpened.Value.ToString("g")</MudTd>
+        <MudTd DataLabel="Age Bracket">@guest.AgeBracket.ToString()</MudTd>
+        <MudTd DataLabel="Dietary Requirements">@guest.CommonRequirements?.ToString() ?? "None"</MudTd>
+        <MudTd DataLabel="Actions">
+            <div class="d-flex flex-row">
+                <div class="m-1"><button class="btn btn-primary" @onclick="@(() => EditGuest(guest))"><i class="fa fa-edit"></i></button></div>
+                <div class="m-1"><button class="btn btn-danger" @onclick="@(() => DeleteGuest(guest))"><i class="fa fa-trash"></i></button></div>
+            </div>            
+        </MudTd>        
+    </RowTemplate>    
+@*    <MudTable Items="@guests" Dense="true" Hover="true" RowsPerPage=10 ServerData="@LoadData">
+    <PagerContent>        
+        <div class="d-flex flex-row align-items-center justify-content-between">
+            Showing @tableState.Page * tableState.PageSize + 1 - @Math.Min(tableState.Page * tableState.PageSize + tableState.PageSize, totalItems) of @totalItems items
+            <div class="d-flex flex-row align-items-center justify-content-end">
+                <MudIconButton Icon="@Icons.Material.Filled.FirstPage" OnClick="@( () => mudTablePager.CurrentPage = 0)" Disabled="@(!mudTablePager.HasPreviousPage())" />
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="@( () => mudTablePager.CurrentPage--)" Disabled="@(!mudTablePager.HasPreviousPage())" />
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="@( () => mudTablePager.CurrentPage++)" Disabled="@(!mudTablePager.HasNextPage())" />
+                <MudIconButton Icon="@Icons.Material.Filled.LastPage" OnClick="@( () => mudTablePager.CurrentPage = mudTablePager.TotalPages - 1)" Disabled="@(!mudTablePager.HasNextPage())" />
+            </div>
+        </div>
+    </PagerContent>*@
+</MudTable>
+
+<MudDialog IsVisible="@showDialog" CloseButton="true" DisableBackdropClick="true">
+    <DialogContent>
+        <EditForm Model="@currentGuest" OnValidSubmit="SaveGuest">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="@currentGuest.FirstName" Label="First Name" Required="true"></MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="@currentGuest.LastName" Label="Last Name" Required="true"></MudTextField>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Checked="@currentGuest.IsAttending" Label="Is Attending"></MudSwitch>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSwitch @bind-Checked="@currentGuest.IsAttendingRehersalDinner" Label="Is Attending Rehersal Dinner"></MudSwitch>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDatePicker @bind-Date="@currentGuest.InviteAccepted" Label="Invite Accepted"></MudDatePicker>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDatePicker @bind-Date="@currentGuest.InvitationOpened" Label="Invitation Opened"></MudDatePicker>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect @bind-Value="@currentGuest.AgeBracket" Label="Age Bracket">
+                        @foreach (var ageBracket in Enum.GetValues<AgeBracket>())
+                        {
+                            <MudSelectItem Value="@ageBracket">@ageBracket.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSelect T="List<CommonDietaryRequirements>" @bind-Value="@currentGuest.CommonRequirements" Label="Dietary Requirements" MultiSelection="true">
+                        @foreach (var dietaryRequirement in Enum.GetValues<CommonDietaryRequirements>())
+                        {
+                            <MudSelectItem Value="@dietaryRequirement">@dietaryRequirement.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+            </MudGrid>            
+        </EditForm>        
+    </DialogContent>
+    <DialogActions>
+        <MudButton Loading="@isSaving" OnClick="SaveGuest">Save</MudButton>        
+    </DialogActions>    
+</MudDialog>
+
+@code { 
+    private List<Guest> guests = new List<Guest>();
+    private TableState tableState = new TableState();
+    private int totalItems;
+    private bool showDialog;
+    private bool isSaving;
+    private Guest currentGuest;
+
+    private MudTablePager mudTablePager;
+
+    private async Task<TableData<Guest>> LoadData(TableState state)
+    {
+        var result = await GuestService.GetPagedResultAsync(state.Page * state.PageSize, state.PageSize, state.SortLabel, state.SortDirection);
+        return new TableData<Guest>
+        {
+            TotalItems = result.TotalCount,
+            Items = result.Items
+        };
+    }
+
+    private void AddGuest()
+    {
+        currentGuest = new Guest();
+        showDialog = true;
+    }
+
+    private void EditGuest(Guest guest)
+    {
+        currentGuest = guest;
+        showDialog = true;
+    }
+
+    private async Task SaveGuest()
+    {
+        isSaving = true;
+        try
+        {
+            if (currentGuest.GuestId == Guid.Empty)
+            {
+                await GuestService.AddAsync(currentGuest);
+            }
+            else
+            {
+                await GuestService.UpdateAsync(currentGuest);
+            }
+            Snackbar.Add("Guest saved successfully.", Severity.Success);
+            showDialog = false;
+            await LoadData(tableState);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("An error occurred while saving guest: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task DeleteGuest(Guest guest)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", $"Are you sure you want to delete {guest.FirstName} {guest.LastName}?");
+        parameters.Add("ButtonText", "Delete");
+        parameters.Add("Color", Color.Error);
+
+        //var dialog = DialogService.Show<DeleteConfirmation>("Delete Guest", parameters);
+        //var result = await dialog.Result;
+
+        //if (!result.Cancelled)
+        //{
+        //    await GuestService.DeleteAsync(guest.GuestId);
+        //    Snackbar.Add("Guest deleted successfully.", Severity.Success);
+        //    await LoadData(tableState);
+        //}
+    }
+}
