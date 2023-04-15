@@ -9,54 +9,60 @@ namespace Wedding.Services
 {
     public class GuestService : IGuestService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public GuestService(ApplicationDbContext context)
+        public GuestService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<List<Guest>> GetAllAsync()
         {
-            return await _context.Guests.ToListAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Guests.ToListAsync();
         }
 
         public async Task<Guest> GetByIdAsync(Guid id)
         {
-            return await _context.Guests.FindAsync(id);
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Guests.FindAsync(id);
         }
 
         public async Task<List<Guest>> GetByPartyIdAsync(Guid partyId)
         {
-            return await _context.Guests.Where(g => g.PartyId == partyId).ToListAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Guests.Where(g => g.PartyId == partyId).ToListAsync();
         }
 
         public async Task AddAsync(Guest guest)
         {
-            _context.Guests.Add(guest);
-            await _context.SaveChangesAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            context.Guests.Add(guest);
+            await context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Guest guest)
         {
-            _context.Guests.Update(guest);
-            await _context.SaveChangesAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            context.Guests.Update(guest);
+            await context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guest guest)
         {
-            _context.Guests.Remove(guest);
-            await _context.SaveChangesAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            context.Guests.Remove(guest);
+            await context.SaveChangesAsync();
         }
 
         //    public GuestService(ApplicationDbContext context)
         //    {
-        //        _context = context;
+        //        context = context;
         //    }
 
         //    public async Task<PagedResult<Guest>> GetPagedResultAsync(int skip, int take, string orderBy, SortDirection orderDirection)
         //    {
-        //        var query = _context.Guests.AsQueryable();
+        //        var query = context.Guests.AsQueryable();
 
         //        if (!string.IsNullOrEmpty(orderBy))
         //        {
@@ -75,29 +81,29 @@ namespace Wedding.Services
 
         //    public async Task<Guest> GetByIdAsync(Guid id)
         //    {
-        //        return await _context.Guests.FindAsync(id);
+        //        return await context.Guests.FindAsync(id);
         //    }
 
         //    public async Task AddAsync(Guest guest)
         //    {
         //        guest.GuestId = Guid.NewGuid();
-        //        await _context.Guests.AddAsync(guest);
-        //        await _context.SaveChangesAsync();
+        //        await context.Guests.AddAsync(guest);
+        //        await context.SaveChangesAsync();
         //    }
 
         //    public async Task UpdateAsync(Guest guest)
         //    {
-        //        _context.Guests.Update(guest);
-        //        await _context.SaveChangesAsync();
+        //        context.Guests.Update(guest);
+        //        await context.SaveChangesAsync();
         //    }
 
         //    public async Task DeleteAsync(Guid id)
         //    {
-        //        var guest = await _context.Guests.FindAsync(id);
+        //        var guest = await context.Guests.FindAsync(id);
         //        if (guest != null)
         //        {
-        //            _context.Guests.Remove(guest);
-        //            await _context.SaveChangesAsync();
+        //            context.Guests.Remove(guest);
+        //            await context.SaveChangesAsync();
         //        }
         //    }
         //}

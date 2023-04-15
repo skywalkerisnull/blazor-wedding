@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Wedding.Data;
 using Wedding.Data.Entities;
 
@@ -6,45 +7,50 @@ namespace Wedding.Services
 {
     public class PartyService : IPartyService
     {
-        private readonly ApplicationDbContext _context;
-        public PartyService(ApplicationDbContext context)
+
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+        public PartyService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
+
+            _contextFactory = contextFactory;
         }
 
         public async Task<List<Party>> GetAllAsync()
         {
-            var parties =  await _context.Party.ToListAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var parties =  await context.Party.ToListAsync();
             return parties;
         }
 
         public async Task<Party> GetByIdAsync(Guid id)
         {
-            return await _context.Party.FindAsync(id);
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Party.FindAsync(id);
         }
 
         public async Task AddAsync(Party party)
         {
-            _context.Party.Add(party);
-            await _context.SaveChangesAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            context.Party.Add(party);
+            await context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Party party)
         {
-            _context.Party.Update(party);
-            await _context.SaveChangesAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            context.Party.Update(party);
+            await context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Party party)
         {
-            _context.Party.Remove(party);
-            await _context.SaveChangesAsync();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            context.Party.Remove(party);
+            await context.SaveChangesAsync();
         }
 
         public async Task<string> GenerateUniqueInviteIdAsync()
         {
-            // This is a mock method to generate a random string
-            // You can replace it with your own logic
             var random = new Random();
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var length = 8;

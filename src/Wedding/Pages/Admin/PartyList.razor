@@ -38,10 +38,21 @@
 
 @code {
     private List<Party> parties;
+    private bool Busy = false;
 
     protected override async Task OnInitializedAsync()
     {
-        parties = await partyService.GetAllAsync();
+        Busy = true;
+
+        try
+        {
+            parties = await partyService.GetAllAsync();
+        }
+        finally
+        {
+            Busy = false;
+        }
+        await base.OnInitializedAsync();
     }
 
     private async Task AddParty()

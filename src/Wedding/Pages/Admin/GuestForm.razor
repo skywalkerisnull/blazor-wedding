@@ -8,16 +8,16 @@
     <DialogContent>
         <MudGrid>
             <MudItem xs="12" sm="6">
-                <MudTextField Label="First Name" @bind-Value="@guest.FirstName" For="@(() => guest.FirstName)"/>
+                <MudTextField Required="true" Label="First Name" @bind-Value="@guest.FirstName" For="@(() => guest.FirstName)"/>
             </MudItem> 
             <MudItem xs="12" sm="6">
-                 <MudTextField Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)"/>
+                 <MudTextField Required="true" Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)"/>
             </MudItem> 
             <MudItem xs="12" sm="6">
                  <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending"/>
             </MudItem> 
             <MudItem xs="12" sm="6">
-                 <MudSwitch Label="Rehersal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner"/>
+                 <MudSwitch Label="Rehearsal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner"/>
             </MudItem> 
             <MudItem xs="12">
                  <MudDatePicker Label="Invite Accepted" @bind-Date="@guest.InviteAccepted"/>
@@ -26,24 +26,22 @@
                  <MudDatePicker Label="Invitation Opened" @bind-Date="@guest.InvitationOpened"/>
             </MudItem>
             <MudItem xs="12">
-                <MudSelect Label="Age Bracket" @bind-Value="@guest.AgeBracket">
+                <MudSelect Required="true" Label="Age Bracket" @bind-Value="@guest.AgeBracket">
                     @foreach (var ageBracket in Enum.GetValues<AgeBracket>())
                     {
                         <MudSelectItem Value="@ageBracket">@ageBracket</MudSelectItem>
                     }
                 </MudSelect> </MudItem>
-            <MudItem xs="12">
+            <MudItem Required="true" xs="12">
                 <MudSelect 
                     T="CommonDietaryRequirements"
-                    Label="Common Requirements" 
-                    MultiSelection="true" 
-                    @*@bind-Value="@guest.CommonRequirements"
-                    @bind-SelectedValues="@guest.CommonRequirements">*@
-                    @bind-Value="value"
+                    Label="Common Requirements"
+                    MultiSelectionTextFunc="DietaryMultiSelection"
+                    MultiSelection
                     @bind-SelectedValues="options">
-                    @foreach (CommonDietaryRequirements item in Enum.GetValues(typeof(CommonDietaryRequirements)))
+                    @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
                     {
-                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                        <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
                     }
                 </MudSelect> 
             </MudItem> 
@@ -52,13 +50,13 @@
             </MudItem> <MudItem xs="12">
                  <MudTextField Label="Other" @bind-Value="@guest.Other" For="@(() => guest.Other)"/>
             </MudItem>
-            <MudItem xs="12">
+            @*<MudItem xs="12">
                 <MudSelect Label="Party" @bind-Value="@guest.PartyId">
                     @foreach (var party in parties)
                     {
                         <MudSelectItem Value="@party.PartyId">@party.PartyName</MudSelectItem>
                     }
-                </MudSelect> </MudItem>
+                </MudSelect> </MudItem>*@
         </MudGrid>
     </DialogContent> 
     <DialogActions>
@@ -74,11 +72,29 @@
 
     [Parameter] public Guest Guest { get; set; }
 
-    private Guest guest = new Guest();
+    private Guest guest = new Guest()
+    {
+        CommonRequirements = new List<CommonDietaryRequirements>()
+    };
     private List<Party> parties;
 
     private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
-    private IEnumerable<CommonDietaryRequirements> options;// { get; set; } = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+    private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+
+    private string DietaryMultiSelection(List<string> selectedValues)
+    {
+        //var result = new List<CommonDietaryRequirements>();
+        //foreach (var value in selectedValues)
+        //{
+        //    CommonDietaryRequirements.TryParse(value, true, out CommonDietaryRequirements enumValue);
+        //    result.Add(enumValue);
+        //}
+        //return result;
+        var text = string.Join(", ", selectedValues);
+        Console.WriteLine(text);
+        return text;
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,14 +102,21 @@
         {
             guest = Guest;
         }
-        parties = await partyService.GetAllAsync();
-        Console.WriteLine(parties.ToString());
+        try
+        {
+            parties = await partyService.GetAllAsync();
+        }
+        catch
+        {
+            Console.WriteLine(parties.ToString());
+        }
     }
 
 
     private void Save()
     {
         MudDialog.Close(DialogResult.Ok(guest));
+        guest.CommonRequirements = options.ToList();
     }
 
     private void Cancel()
