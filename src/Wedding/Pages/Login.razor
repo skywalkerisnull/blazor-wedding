@@ -1,0 +1,58 @@
+﻿@page "/login" 
+@using Microsoft.AspNetCore.Identity
+@using Wedding.Services 
+@attribute [AllowAnonymous] 
+@inject SignInManager<IdentityUser> SignInMgr 
+@inject UserManager<IdentityUser> UserMgr 
+@inject NavigationManager NavMgr
+
+<h3>Login</h3>
+
+<MudForm Model="this">
+    <MudLabel For="@(() => Email)">Email</MudLabel> 
+    <MudInput InputType="InputType.Email" @bind-Value="Email" Validation="@(() => Email)" ErrorText="Email is required"/> 
+
+    <MudLabel For="@(() => password)">Password</MudLabel> 
+    <MudInput InputType="InputType.Password" @bind-Value="password" Validation="@(() => password)" ErrorText="Password is required"/>
+</MudForm> @if (!string.IsNullOrEmpty(error))
+{
+    <MudAlert Text="@error" Severity="Severity.Error" Variant="Variant.Filled" />
+} 
+<MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="LoginClicked">Login</MudButton>
+
+@code {
+    public string Email { get; set; }
+
+    private string password;
+    private string error;
+
+    private async Task LoginClicked()
+    {
+        error = null;
+        var usr = await UserMgr.FindByEmailAsync(Email);
+        if (usr == null)
+        {
+            error = "User not found or password incorrect";
+            return;
+        }
+
+        if (await SignInMgr.CanSignInAsync(usr))
+        {
+            var result = await SignInMgr.CheckPasswordSignInAsync(usr, password, true);
+            if (result == SignInResult.Success)
+            {
+                Guid key = Guid.NewGuid();
+                BlazorCookieLoginMiddleware.Logins[key] = new LoginInfo { Email = Email, Password = password };
+                NavMgr.NavigateTo($"/login?key={key}", true);
+            }
+            else
+            {
+                error = "User not found or password incorrect";
+            }
+        }
+        else
+        {
+            error = "Your account is blocked";
+        }
+    }
+}

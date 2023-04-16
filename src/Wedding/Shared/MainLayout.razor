@@ -41,26 +41,22 @@
         }
     </style>
     <div class="main">
+
         <div class="content">
             @if (RouteData != null && RouteData.RouteValues.Count != 0)
             {
-                var slug = RouteData.RouteValues["Slug"]?.ToString();
+                slug = RouteData.RouteValues["Slug"]?.ToString();
             }
-            @Body
-        </div>
-    </div>
-    <div class="aside aside-1">
-    </div>
-    <div class="aside aside-2">
-    </div>
-</div>
+            @Body </div>
+    </div> <div class="aside aside-1"> </div> <div class="aside aside-2"> </div> </div>
 
-<MudThemeProvider />
-<MudDialogProvider />
+<MudThemeProvider /> 
+<MudDialogProvider /> 
 <MudSnackbarProvider />
 
-
 @code {
+
     [CascadingParameter]
     RouteData RouteData { get; set; }
+    string slug { get; set; }
 }

@@ -3,60 +3,75 @@
 <div style="text-align: center;">
     <a style="font-family: 'Dancing Script'; font-size: 70px" href="" @onclick="@(() => NavigationManager.NavigateTo("/"))">Ashley & Hayley</a>
 </div>
-
 <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
     <div class="container justify-content-center" style="font-family: 'Josefin Sans'">
         <button class="navbar-toggler justify-content-center" type="button" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="@NavMenuCssClass justify-content-center" @onclick="ToggleNavMenu">
-                <ul class="navbar-nav justify-content-center">
+            <ul class="navbar-nav justify-content-center">
 
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="">
+                        <span aria-hidden="true"></span>
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/wedding"))">
+                        <span aria-hidden="true"></span> Wedding
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/venue"))">
+                        <span aria-hidden="true"></span> Venue
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/schedule"))">
+                        <span aria-hidden="true"></span> Schedule
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/accomodation"))">
+                        <span aria-hidden="true"></span> Accomodation
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/dress-code"))">
+                        <span aria-hidden="true"></span> Dress Code
+                    </NavLink>
+                </li>
+
+                <li class="nav-item">
+                    <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/gifts"))">
+                        <span aria-hidden="true"></span> Gifts
+                    </NavLink>
+                </li>
+
+                <AuthorizeView>
+                <Authorized> 
                     <li class="nav-item">
-                        <NavLink class="nav-link text-dark" href="">
-                            <span aria-hidden="true"></span>
+                        <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/parties"))">
+                            <span aria-hidden="true"></span> Edit Parties
                         </NavLink>
                     </li>
-
+                    
                     <li class="nav-item">
-                        <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/wedding"))">
-                            <span aria-hidden="true"></span> Wedding
+                        <NavLink class="nav-link text-dark" href="" 
+                                 @onclick="@(() => NavigationManager.NavigateTo($"/edit/{NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}"))">
+                            <span aria-hidden="true"></span> Edit Page
                         </NavLink>
                     </li>
-
-                    <li class="nav-item">
-                        <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/venue"))">
-                            <span aria-hidden="true"></span> Venue
-                        </NavLink>
-                    </li>
-
-                    <li class="nav-item">
-                        <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/schedule"))">
-                            <span aria-hidden="true"></span> Schedule
-                        </NavLink>
-                    </li>
-
-                    <li class="nav-item">
-                        <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/accomodation"))">
-                            <span aria-hidden="true"></span> Accomodation
-                        </NavLink>
-                    </li>
-
-                    <li class="nav-item">
-                        <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/dress-code"))">
-                            <span aria-hidden="true"></span> Dress Code
-                        </NavLink>
-                    </li>
-
-                    <li class="nav-item">
-                        <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/gifts"))">
-                            <span aria-hidden="true"></span> Gifts
-                        </NavLink>
-                    </li>
-
-                </ul>
-            </div>
-            </div>
+                </Authorized>
+                </AuthorizeView>
+            </ul>
+        </div>
+    </div>
 </nav>
 
 @code {

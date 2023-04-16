@@ -1,5 +1,4 @@
 ﻿@page "/edit/{slug}"
-@using TinyMCE.Blazor
 @using Microsoft.EntityFrameworkCore;
 @inject ApplicationDbContext dbContext
 
@@ -39,8 +38,8 @@ else{
 }
 
 @code {
-        [Parameter]
-        public string slug { get; set; }
+    [Parameter]
+    public string slug { get; set; }
     private bool _processing = false;
     private Data.Entities.Page entity;
 
