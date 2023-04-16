@@ -2,41 +2,45 @@
 @using Wedding.Services
 @inject IPartyService partyService
 @inject IDialogService dialogService
-
-<MudTable Items="@parties" Hover="true" Dense="true">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Parties</MudText> 
-        <MudSpacer/> 
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddParty">Add Party</MudButton>
-    </ToolBarContent> 
-    <HeaderContent>
-        <MudTh>Name</MudTh> 
-        <MudTh>Address</MudTh> 
-        <MudTh>Comments</MudTh> 
-        <MudTh>Invited</MudTh> 
-        <MudTh>Sent</MudTh> 
-        <MudTh>Actions</MudTh>
-        <MudTh>Invite Id</MudTh>
-    </HeaderContent> 
-    <RowTemplate Context="party">
-        <MudTd DataLabel="Name">@party.PartyName</MudTd> 
-        <MudTd DataLabel="Address">@party.Address</MudTd> 
-        <MudTd DataLabel="Comments">@party.Comments</MudTd> 
-        <MudTd DataLabel="Invited">
-            <MudSwitch Checked="@party.IsInvited" Disabled="true"/>
-        </MudTd> <MudTd DataLabel="Sent">
-            <MudSwitch Checked="@party.InvitationSent" Disabled="true"/>
-        </MudTd> 
-        <MudTd DataLabel="Actions">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditParty(party))">Edit</MudButton> 
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteParty(party))">Delete</MudButton> 
-            <NavLink href="@($"/guests/{party.PartyId}")">
-                 <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small">Guests</MudButton>
-            </NavLink>
-        </MudTd>
-        <MudTd DataLabel="Invite Id">@party.UniqueInviteId</MudTd>
-    </RowTemplate>
-</MudTable>
+<AuthorizeView>
+    <Authorized>
+        <MudTable Items="@parties" Hover="true" Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Parties</MudText>
+                <MudSpacer/>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddParty">Add Party</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Address</MudTh>
+                <MudTh>Comments</MudTh>
+                <MudTh>Invited</MudTh>
+                <MudTh>Sent</MudTh>
+                <MudTh>Actions</MudTh>
+                <MudTh>Invite Id</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="party">
+                <MudTd DataLabel="Name">@party.PartyName</MudTd>
+                <MudTd DataLabel="Address">@party.Address</MudTd>
+                <MudTd DataLabel="Comments">@party.Comments</MudTd>
+                <MudTd DataLabel="Invited">
+                    <MudSwitch Checked="@party.IsInvited" Disabled="true"/>
+                </MudTd>
+                <MudTd DataLabel="Sent">
+                    <MudSwitch Checked="@party.InvitationSent" Disabled="true"/>
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditParty(party))">Edit</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteParty(party))">Delete</MudButton>
+                    <NavLink href="@($"/guests/{party.PartyId}")">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small">Guests</MudButton>
+                    </NavLink>
+                </MudTd>
+                <MudTd DataLabel="Invite Id">@party.UniqueInviteId</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     private List<Party> parties;

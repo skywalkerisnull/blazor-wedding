@@ -1,0 +1,17 @@
+﻿@page "/logout"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+
+@{
+    // Call the OnGetAsync method to sign out the user and redirect them to the homepage
+    await OnGetAsync();
+}
+
+@functions {
+    // Define the OnGetAsync method that will sign out the user using the HttpContext
+    public async Task OnGetAsync()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        Response.Redirect("/");
+    }
+}

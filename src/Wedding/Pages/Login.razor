@@ -1,24 +1,48 @@
 ﻿@page "/login" 
 @using Microsoft.AspNetCore.Identity
 @using Wedding.Services 
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
 @attribute [AllowAnonymous] 
-@inject SignInManager<IdentityUser> SignInMgr 
+@inject SignInManager<IdentityUser> SignInMgr
 @inject UserManager<IdentityUser> UserMgr 
 @inject NavigationManager NavMgr
+@inject IJSRuntime JsRuntime
 
-<h3>Login</h3>
+@inherits ComponentBase
 
-<MudForm Model="this">
-    <MudLabel For="@(() => Email)">Email</MudLabel> 
-    <MudInput InputType="InputType.Email" @bind-Value="Email" Validation="@(() => Email)" ErrorText="Email is required"/> 
+<AuthorizeView>
+    <NotAuthorized>
+        <h3>Login</h3>
+        <MudGrid>
+            <MudItem xs="12" sm="7">
+                <MudPaper Class="pa-4">
+                    <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
+                        <MudTextField T="string" 
+                                      Label="Email" 
+                                      Required="true" 
+                                      RequiredError="Email is required!"
+                                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" @bind-Value="Email" />
+                        <MudTextField T="string" 
+                                      Label="Password" 
+                                      HelperText="Password"
+                                      InputType="InputType.Password" 
+                                      Required="true" 
+                                      RequiredError="Password is required!" 
+                                      @bind-Value="password"/>
+                        <div class="d-flex align-center justify-space-between">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@LoginClicked">Login</MudButton>
+                        </div>
+                    </MudForm>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </NotAuthorized>
+    <Authorized>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@LogoutClicked">Logout</MudButton>
+    </Authorized>
+</AuthorizeView>
 
-    <MudLabel For="@(() => password)">Password</MudLabel> 
-    <MudInput InputType="InputType.Password" @bind-Value="password" Validation="@(() => password)" ErrorText="Password is required"/>
-</MudForm> @if (!string.IsNullOrEmpty(error))
-{
-    <MudAlert Text="@error" Severity="Severity.Error" Variant="Variant.Filled" />
-} 
-<MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="LoginClicked">Login</MudButton>
 
 @code {
     public string Email { get; set; }
@@ -55,4 +79,40 @@
             error = "Your account is blocked";
         }
     }
+
+    private async Task LogoutClicked()
+    {
+        await JsRuntime.InvokeVoidAsync("logout");
+        NavMgr.NavigateTo("/login", true);
+    }
+
+    bool success;
+    string[] errors = { };
+    MudTextField<string> pwField1;
+    MudForm form;
+
+    private IEnumerable<string> PasswordStrength(string pw)
+    {
+        if (string.IsNullOrWhiteSpace(pw))
+        {
+            yield return "Password is required!";
+            yield break;
+        }
+        if (pw.Length < 8)
+            yield return "Password must be at least of length 8";
+        if (!Regex.IsMatch(pw, @"[A-Z]"))
+            yield return "Password must contain at least one capital letter";
+        if (!Regex.IsMatch(pw, @"[a-z]"))
+            yield return "Password must contain at least one lowercase letter";
+        if (!Regex.IsMatch(pw, @"[0-9]"))
+            yield return "Password must contain at least one digit";
+    }
+
+    private string PasswordMatch(string arg)
+    {
+        if (pwField1.Value != arg)
+            return "Passwords don't match";
+        return null;
+    }
+
 }

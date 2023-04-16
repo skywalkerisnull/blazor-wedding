@@ -2,40 +2,46 @@
 @using Microsoft.EntityFrameworkCore;
 @inject ApplicationDbContext dbContext
 
-<h2>Edit Page: @slug</h2>
-<br />
-@if (entity == null) {
-    <p>Loading…</p>
-}
-else{
-    <EditForm Model=@entity OnValidSubmit="@SaveChanges"> 
-        <DataAnnotationsValidator /> 
-        <ValidationSummary />
+@*<AuthorizeView>
+    <Authorized>*@
+        <h2>Edit Page: @slug</h2>
+        <br/>
+        @if (entity == null)
+        {
+            <p>Loading…</p>
+        }
+        else
+        {
+            <EditForm Model=@entity OnValidSubmit="@SaveChanges">
+                <DataAnnotationsValidator/>
+                <ValidationSummary/>
 
-    <p>
-        <label for="content"></label>
-        <Editor Conf="@editorConfig"
-            ScriptSrc="/js/tinymce/tinymce.min.js"
-            id="content" @bind-Value="@entity.Content" 
-        Field="@(() => entity.Content)"/>
-    </p>
-        <MudButton 
-            Disabled="@_processing"
-            Variant="Variant.Filled" 
-            Color="Color.Primary" 
-            OnClick="@SaveChanges">
-            @if (_processing)
-            {
-                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                <MudText Class="ms-2">Saving</MudText>
-            }
-            else
-            {
-                <MudText>Save</MudText>
-            }
-        </MudButton>
-</EditForm>
-}
+                <p>
+                    <label for="content"></label>
+                    <Editor Conf="@editorConfig"
+                            ScriptSrc="/js/tinymce/tinymce.min.js"
+                            id="content" @bind-Value="@entity.Content"
+                            Field="@(() => entity.Content)"/>
+                </p>
+                <MudButton
+                    Disabled="@_processing"
+                    Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    OnClick="@SaveChanges">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Class="ms-2">Saving</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Save</MudText>
+                    }
+                </MudButton>
+            </EditForm>
+        }
+@*    </Authorized>
+</AuthorizeView>*@
 
 @code {
     [Parameter]

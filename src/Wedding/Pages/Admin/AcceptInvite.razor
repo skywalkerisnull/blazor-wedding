@@ -14,14 +14,14 @@
 }
 else if (party.IsInvited == false)
 {
-    <p>Sorry, you are not invited to this wedding.</p>
+    <p>Sorry, we are unable to locate your invite. If you think this is a mistake, please reach out to the hosts.</p>
 }
 else
 {
     <MudPaper Class="p-4">
         <MudText Variant="Variant.H5">Dear @party.PartyName,</MudText>
         <MudText Variant="Variant.Body1">You are cordially invited to the wedding of Hayley & Ashley</MudText>
-        <MudText Variant="Variant.Body1">Please fill in the details below and click on the Accept button to confirm your attendance.</MudText>
+        <MudText Variant="Variant.Body1">So that we know that you are coming, please fill in the details below and click on the Accept button to confirm your attendance.</MudText>
         <MudForm Model="@party">
             <MudGrid Spacing="8">
                 @foreach (var guest in party.Guests)
@@ -29,17 +29,17 @@ else
                     <MudItem xs="12" sm="6" md="4">
                         <td>"@guest.FirstName @guest.LastName"</td>
                         <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending" />
-                    <MudSelect 
-                    T="CommonDietaryRequirements"
-                    Label="Common Requirements"
-                    MultiSelectionTextFunc="DietaryMultiSelection"
-                    MultiSelection
-                    @bind-SelectedValues="options">
-                    @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
-                    {
-                        <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
-                    }
-                </MudSelect> 
+                        <MudSelect 
+                            T="CommonDietaryRequirements"
+                            Label="Common Requirements"
+                            MultiSelectionTextFunc="DietaryMultiSelection"
+                            MultiSelection
+                            @bind-SelectedValues="options">
+                            @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
+                            {
+                                <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+                            }
+                        </MudSelect> 
                         <MudTextField Label="Allergies" @bind-Value="@guest.Allergies" />
                         <MudTextField Label="Other" @bind-Value="@guest.Other" />
                     </MudItem>
@@ -51,6 +51,9 @@ else
             </div>
 
         </MudForm>
+
+        <MudText Variant="Variant.Body1">For your convenience, here is a calendar invite with all the details that you need.</MudText>
+
         <div style="text-align:center">
             <add-to-calendar-button name="Ashley & Hayley's Wedding"
                                     startDate="2024-01-06"

@@ -1,19 +1,21 @@
-﻿@using MudBlazor
-
-<MudDialog>
-    <DialogContent>
-        <MudForm Model="@guest" OnValidSubmit="@OnValidSubmit">
-            <MudTextField @bind-Value="@guest.FirstName" Label="First Name" Required="true" />
-            <MudTextField @bind-Value="@guest.LastName" Label="Last Name" Required="true" />
-            @* Add more fields for the other properties of the Guest class here *@
-            <div style="text-align: right;">
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" Type="submit">Save</MudButton>
-                &nbsp;
-                <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="@Cancel">Cancel</MudButton>
-            </div>
-        </MudForm>
-    </DialogContent>
-</MudDialog>
+﻿<AuthorizeView>
+    <Authorized>
+        <MudDialog>
+            <DialogContent>
+                <MudForm Model="@guest" OnValidSubmit="@OnValidSubmit">
+                    <MudTextField @bind-Value="@guest.FirstName" Label="First Name" Required="true"/>
+                    <MudTextField @bind-Value="@guest.LastName" Label="Last Name" Required="true"/>
+                    @* Add more fields for the other properties of the Guest class here *@
+                    <div style="text-align: right;">
+                        <MudButton Color="Color.Primary" Variant="Variant.Filled" Type="submit">Save</MudButton>
+                        &nbsp;
+                        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="@Cancel">Cancel</MudButton>
+                    </div>
+                </MudForm>
+            </DialogContent>
+        </MudDialog>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }

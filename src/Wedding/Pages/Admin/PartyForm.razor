@@ -1,34 +1,37 @@
 ﻿@using Wedding.Services
 @inject IPartyService partyService
-
-<MudDialog>
-    <TitleContent>
-         <MudText Typo="Typo.h6">@Title</MudText>
-    </TitleContent> 
-    <DialogContent>
-        <MudGrid>
-            <MudItem xs="12" sm="6">
-                 <MudTextField Label="Name" @bind-Value="@party.PartyName" For="@(() => party.PartyName)"/>
-            </MudItem> 
-            <MudItem xs="12" sm="6">
-                 <MudTextField Label="Address" @bind-Value="@party.Address" For="@(() => party.Address)"/>
-            </MudItem> 
-            <MudItem xs="12">
-                 <MudTextField Label="Comments" @bind-Value="@party.Comments" For="@(() => party.Comments)"/>
-            </MudItem> 
-            <MudItem xs="12" sm="6">
-                 <MudSwitch Label="Invited" @bind-Checked="@party.IsInvited"/>
-            </MudItem> 
-            <MudItem xs="12" sm="6">
-                <MudSwitch Label="Sent" @bind-Checked="@party.InvitationSent"/>
-            </MudItem>
-        </MudGrid>
-    </DialogContent> 
-    <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Save</MudButton> 
-        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="@Cancel">Cancel</MudButton>
-    </DialogActions>
-</MudDialog>
+<AuthorizeView>
+    <Authorized>
+        <MudDialog>
+            <TitleContent>
+                <MudText Typo="Typo.h6">@Title</MudText>
+            </TitleContent>
+            <DialogContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Name" @bind-Value="@party.PartyName" For="@(() => party.PartyName)"/>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Address" @bind-Value="@party.Address" For="@(() => party.Address)"/>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="Comments" @bind-Value="@party.Comments" For="@(() => party.Comments)"/>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSwitch Label="Invited" @bind-Checked="@party.IsInvited"/>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSwitch Label="Sent" @bind-Checked="@party.InvitationSent"/>
+                    </MudItem>
+                </MudGrid>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Save</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="@Cancel">Cancel</MudButton>
+            </DialogActions>
+        </MudDialog>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
