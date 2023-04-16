@@ -1,61 +1,46 @@
 ﻿@page "/edit/{slug}"
 @using Microsoft.EntityFrameworkCore;
 @inject ApplicationDbContext dbContext
+@using Radzen
 
-@*<AuthorizeView>
-    <Authorized>*@
-        <h2>Edit Page: @slug</h2>
-        <br/>
-        @if (entity == null)
-        {
-            <p>Loading…</p>
-        }
-        else
-        {
-            <EditForm Model=@entity OnValidSubmit="@SaveChanges">
-                <DataAnnotationsValidator/>
-                <ValidationSummary/>
+<h2>Edit Page: @slug</h2>
+<br />
+@if (entity == null)
+{
+    <p>Loading…</p>
+}
+else
+{
+@*    <EditForm Model=@entity OnValidSubmit="@SaveChanges">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-                <p>
-                    <label for="content"></label>
-                    <Editor Conf="@editorConfig"
-                            ScriptSrc="/js/tinymce/tinymce.min.js"
-                            id="content" @bind-Value="@entity.Content"
-                            Field="@(() => entity.Content)"/>
-                </p>
-                <MudButton
-                    Disabled="@_processing"
-                    Variant="Variant.Filled"
-                    Color="Color.Primary"
-                    OnClick="@SaveChanges">
-                    @if (_processing)
-                    {
-                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
-                        <MudText Class="ms-2">Saving</MudText>
-                    }
-                    else
-                    {
-                        <MudText>Save</MudText>
-                    }
-                </MudButton>
-            </EditForm>
-        }
-@*    </Authorized>
-</AuthorizeView>*@
+        <p>*@
+            <label for="content"></label>
+            <RadzenHtmlEditor @bind-Value=@entity.Content style="height: 300px;" UploadUrl="upload/image" />
+        @*</p>
+        <MudButton Disabled="@_processing"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               OnClick="@SaveChanges">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Saving</MudText>
+            }
+            else
+            {
+                <MudText>Save</MudText>
+            }
+        </MudButton>
+    </EditForm>*@
+}
 
 @code {
     [Parameter]
     public string slug { get; set; }
     private bool _processing = false;
     private Data.Entities.Page entity;
-
-    private Dictionary<string, object> editorConfig = new Dictionary<string, object>{
-        {"promotion", false},
-        {"content_css", "/css/site.css"},
-        {"importcss_append", true},
-        {"plugins", "preview importcss searchreplace autolink save directionality code visualblocks visualchars fullscreen image link media template codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap quickbars emoticons" },
-        {"toolbar", "undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media template link anchor codesample | ltr rtl"}
-    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,7 +65,6 @@
                 await dbContext.AddAsync<Data.Entities.Page>(entity);
             }
         }
-
         StateHasChanged();
     }
 
@@ -89,5 +73,6 @@
         _processing = true;
         await dbContext.SaveChangesAsync();
         _processing = false;
+        StateHasChanged();
     }
 }

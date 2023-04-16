@@ -319,10 +319,10 @@ namespace Wedding.Services
                     else
                     {
                         //Add a new guest to the corresponding party
-                        var party = parties.FirstOrDefault(p => p.PartyId == guest.PartyId);
-                        if (party != null)
+                        var party_ = parties.FirstOrDefault(p => p.PartyId == guest.PartyId);
+                        if (party_ != null)
                         {
-                            party.Guests.Add(guest);
+                            party_.Guests.Add(guest);
                         }
                     }
                 }

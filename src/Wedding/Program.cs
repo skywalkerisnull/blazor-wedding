@@ -5,6 +5,8 @@ using MudBlazor.Services;
 using Wedding.Areas.Identity;
 using Wedding.Data;
 using Wedding.Services;
+using Wedding.Controllers;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,10 +20,14 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 
 builder.Services.AddScoped<IGuestService, GuestService>();
 builder.Services.AddScoped<IPartyService, PartyService>();
+builder.Services.AddScoped<ImageController>();
+
+builder.Services.AddScoped<DialogService>();
 
 
 builder.Services.AddMudServices();
@@ -47,6 +53,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<BlazorCookieLoginMiddleware>();
+
 app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
