@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections;
 
 namespace Wedding.Controllers
@@ -18,9 +19,9 @@ namespace Wedding.Controllers
             _environment = environment;
         }
 
-        [HttpPost]
+        [HttpPost("upload/multiple")]
         [Produces("application/json")]
-        public async Task<IActionResult> Post(List<IFormFile> files)
+        public async Task<IActionResult> Post(IFormFile[] files)
         {
             // Get the file from the POST request
             var theFile = HttpContext.Request.Form.Files.GetFile("file");
@@ -83,6 +84,29 @@ namespace Wedding.Controllers
             }
         }
 
+        [HttpPost("upload")]
+        public IActionResult Image(IFormFile file)
+        {
+            try
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+
+                using (var stream = new FileStream(Path.Combine(_environment.WebRootPath,"images" ,fileName), FileMode.Create))
+                {
+                    // Save the file
+                    file.CopyTo(stream);
+
+                    // Return the URL of the file
+                    var url = Url.Content($"~/images/{fileName}");
+
+                    return Ok(new { Url = url });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
         [HttpGet("{fileName}")]
         public IActionResult Download(string fileName)

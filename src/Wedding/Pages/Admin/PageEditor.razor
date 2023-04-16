@@ -11,16 +11,17 @@
 }
 else
 {
-@*    <EditForm Model=@entity OnValidSubmit="@SaveChanges">
+
+    <EditForm Model=@entity OnValidSubmit="@SaveChanges">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <p>*@
+        <p>
             <label for="content"></label>
-            <RadzenHtmlEditor @bind-Value=@entity.Content style="height: 300px;" UploadUrl="upload/image" />
-        @*</p>
+            <RadzenHtmlEditor @bind-Value=@entity.Content UploadUrl="api/Image/upload" style="height: 300px;" />
+        </p>
         <MudButton Disabled="@_processing"
-               Variant="Variant.Filled"
+               Variant="MudBlazor.Variant.Filled"
                Color="Color.Primary"
                OnClick="@SaveChanges">
             @if (_processing)
@@ -33,7 +34,7 @@ else
                 <MudText>Save</MudText>
             }
         </MudButton>
-    </EditForm>*@
+    </EditForm>
 }
 
 @code {
@@ -41,6 +42,8 @@ else
     public string slug { get; set; }
     private bool _processing = false;
     private Data.Entities.Page entity;
+    int progress;
+    string info;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,7 +70,11 @@ else
         }
         StateHasChanged();
     }
-
+    void OnProgress(UploadProgressArgs args, string name)
+    {
+        this.info = $"% '{name}' / {args.Loaded} of {args.Total} bytes.";
+        this.progress = args.Progress;
+    }
     private async Task SaveChanges()
     {
         _processing = true;
