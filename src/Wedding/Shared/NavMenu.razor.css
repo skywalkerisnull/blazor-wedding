@@ -1,4 +1,10 @@
-.navbar-toggler {
+a.navbar-brand {
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
+}
+
+/*.navbar-toggler {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -56,13 +62,45 @@
     }
 
     .collapse {
-        /* Never collapse the sidebar for wide screens */
+         Never collapse the sidebar for wide screens 
         display: block;
     }
     
     .nav-scrollable {
-        /* Allow sidebar to scroll for tall menus */
+         Allow sidebar to scroll for tall menus 
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
 }
+
+@media only screen and (min-width: 768px) {
+    #hamburger-menu {
+        display: none;
+    }
+
+    .navbar-nav {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .navbar-nav li {
+        margin: 0 10px;
+    }
+}
+
+@media only screen and (max-width: 767px) {
+    #hamburger-menu {
+        display: block;
+    }
+
+    .navbar-nav {
+        display: none;
+    }
+
+    #hamburger-menu:checked ~ .navbar-nav {
+        display: block;
+        flex-direction: column;
+        align-items: center;
+    }
+}*/
