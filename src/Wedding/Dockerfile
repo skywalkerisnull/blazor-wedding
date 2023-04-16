@@ -17,6 +17,9 @@ FROM build AS publish
 RUN dotnet publish "Wedding.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+RUN apk update \
+    && apk --no-cache add icu-libs fontconfig ttf-dejavu
+ENV DOTNET_RUNNING_IN_CONTAINER=true
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Wedding.dll"]
