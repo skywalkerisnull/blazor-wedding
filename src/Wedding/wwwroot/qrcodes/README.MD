@@ -1,0 +1,1 @@
+﻿Location for all the QR Codes

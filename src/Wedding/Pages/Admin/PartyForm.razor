@@ -1,5 +1,8 @@
 ﻿@using Wedding.Services
 @inject IPartyService partyService
+@inject IConfiguration _configuration
+@inject NavigationManager NavManager
+
 <AuthorizeView>
     <Authorized>
         <MudDialog>
@@ -39,7 +42,7 @@
 
     [Parameter] public Party Party { get; set; }
 
-    private Party party = new Party();
+    private Party party = new();
 
     protected override void OnInitialized()
     {
@@ -54,7 +57,12 @@
         if (Party == null)
         {
             party.PartyId = Guid.NewGuid();
-            party.UniqueInviteId = await partyService.GenerateUniqueInviteIdAsync();
+            var uniqueInviteCode = await partyService.GenerateUniqueInviteIdAsync();
+            party.UniqueInviteId = uniqueInviteCode;
+            var relativePath = "invite/" + uniqueInviteCode;
+            var invitePage = new Uri(new Uri(NavManager.BaseUri), relativePath);
+
+            _ = QrCodeGenerator.GenerateQRCode(uniqueInviteCode, _configuration.GetValue<string>("QRCodeDirectory", "wwwroot/qrcodes"), invitePage);
         }
         MudDialog.Close(DialogResult.Ok(party));
     }

@@ -45,10 +45,14 @@ namespace Wedding.Services
         public async Task UpdateAsync(Party party)
         {
             await using var context = await _contextFactory.CreateDbContextAsync();
-            foreach (var guests in party.Guests)
+            if (party.Guests != null)
             {
-                context.Guests.Update(guests);
+                foreach (var guests in party.Guests)
+                {
+                    context.Guests.Update(guests);
+                }
             }
+
             context.Party.Update(party);
             await context.SaveChangesAsync();
         }
@@ -63,7 +67,7 @@ namespace Wedding.Services
         public async Task<string> GenerateUniqueInviteIdAsync()
         {
             var random = new Random();
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~";
             var length = 8;
             var inviteId = new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
