@@ -36,7 +36,9 @@
                         <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small">Guests</MudButton>
                     </NavLink>
                 </MudTd>
-                <MudTd DataLabel="Invite Id">@party.UniqueInviteId</MudTd>
+                <MudTd DataLabel="Invite Id">
+                    <MudLink href="@($"/qrcodes/{party.UniqueInviteId}.png")">@party.UniqueInviteId</MudLink>
+                    </MudTd>
             </RowTemplate>
         </MudTable>
     </Authorized>
