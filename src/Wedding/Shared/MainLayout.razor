@@ -50,7 +50,7 @@
             @Body </div>
     </div> <div class="aside aside-1"> </div> <div class="aside aside-2"> </div> </div>
 
-<MudThemeProvider /> 
+<MudThemeProvider Theme="_weddingTheme" />
 <MudDialogProvider /> 
 <MudSnackbarProvider />
 
@@ -59,4 +59,20 @@
     [CascadingParameter]
     RouteData RouteData { get; set; }
     string slug { get; set; }
+
+    private readonly MudTheme _weddingTheme = new()
+    {
+        Typography = new Typography()
+        {
+            Default = new Default()
+            {
+                FontFamily = new[] { "Josefin Sans", "Dancing Script", "Roboto", "sans-serif" }
+            },
+
+            H1 = new H1()
+            {
+                FontFamily = new[] { "Josefin Sans" },
+            }
+        }
+    };
 }
