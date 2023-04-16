@@ -10,7 +10,6 @@ namespace Wedding.Data.Entities
         public string PartyName { get; set; }
         public List<Guest> Guests { get; set; }
         public string? Address { get; set; }
-
         public string? Comments { get; set; }
         public bool IsInvited { get; set; } = true;
         public bool InvitationOpened { get; set; } = false;
