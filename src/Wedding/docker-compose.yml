@@ -29,7 +29,11 @@ services:
     ports: 
       - "5000:80"
     env_file: .env
+    volumes:
+      - wedding-data/qrcodes:/app/wwwroot/qrcodes
+      - wedding-data/images:/app/wwwroot/images
 
 volumes:
   local_pgdata:
   pgadmin-data:
+  wedding-data:  
