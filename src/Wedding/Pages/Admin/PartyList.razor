@@ -162,8 +162,9 @@
         {
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
+        _http.BaseAddress = new Uri(NavigationManager.BaseUri);
 
-        var response = await _http.GetAsync("api/getguestlist");
+        var response = await _http.GetAsync("/api/guestlist/getguestlist");
 
         var bytes = await response.Content.ReadAsByteArrayAsync();
         // Stream the file content to a raw binary data buffer on the client
