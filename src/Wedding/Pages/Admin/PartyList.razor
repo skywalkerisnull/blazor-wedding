@@ -1,9 +1,41 @@
 ﻿@page "/parties"
+@using BlazorDownloadFile;
+@using System.Net;
 @using Wedding.Services
+@using System.IO
+@using System.Net.Http
+@using System.Net.Http.Headers
 @inject IPartyService partyService
 @inject IDialogService dialogService
+@inject IJSRuntime _js
+@inject NavigationManager _navigation
+@inject NavigationManager NavigationManager
+@inject HttpClient _http
+@inject IBlazorDownloadFileService _downloadService
+
 <AuthorizeView>
     <Authorized>
+        <MudGrid Justify="Justify.FlexEnd">
+
+            <MudItem xs="6">
+                <MudFileUpload T="IBrowserFile" FilesChanged="UploadGuests" Accept=".xlsx">
+                    <ButtonTemplate Context="buttonContext">
+                        <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" for="@buttonContext">
+                            Upload Guests
+                        </MudButton>
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </MudItem>
+
+            <MudItem xs="6">
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudDownload" OnClick="DownloadGuests">
+                    Download Guests
+                </MudButton>
+                <MudProgressCircular Indeterminate="false" Visible="@IsLoading" />
+            </MudItem>
+
+        </MudGrid>
+
         <MudTable Items="@parties" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Parties</MudText>
@@ -47,6 +79,7 @@
 @code {
     private List<Party> parties;
     private bool Busy = false;
+    private bool IsLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,105 +137,39 @@
         }
     }
 
+    private async Task UploadGuests(IBrowserFile file)
+    {
+        IsLoading = true;
+        // Read the file content as a byte array
+        //var fileContent = await file.OpenReadStream().ReadAsync();
+        // Your logic to process the excel file and upload the data
+        // ...
+        IsLoading = false;
+    }
+
+    private async Task DownloadGuests()
+    {
+        IsLoading = true;
+
+        var cookie = await _js.InvokeAsync<string>("getCookie", ".AspNetCore.Identity.Application");
+        var token = await _js.InvokeAsync<string>("localStorage.getItem", "authToken");
+        // Set the cookie or token to the HttpClient request header
+        if (!string.IsNullOrEmpty(cookie))
+        {
+            _http.DefaultRequestHeaders.Add("Cookie", cookie);
+        }
+        if (!string.IsNullOrEmpty(token))
+        {
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var response = await _http.GetAsync("api/getguestlist");
+
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        // Stream the file content to a raw binary data buffer on the client
+        var now = DateTime.UtcNow.ToString();
+        await _js.InvokeVoidAsync("downloadFileFromStream", bytes, $"guests-{now}.xlsx");
+        
+        IsLoading = false;
+    }
 }
-
-@*@page "/parties"
-@using MudBlazor
-@using Wedding.Data.Entities
-@using Wedding.Services;
-@inject IGuestService GuestService
-@inject IPartyService PartyService
-@inject IDialogService DialogService
-
-
-<MudButton Color="Color.Primary" @onclick="AddParty">
-    Add Party
-    </MudButton>
-
-<MudTable Items="@parties" Dense="true">
-    <HeaderContent>
-        <MudTh>Party Name</MudTh>
-        <MudTh>Address</MudTh>
-        <MudTh>Comments</MudTh>
-        <MudTh>Is Invited</MudTh>
-        <MudTh>Invitation Opened</MudTh>
-        <MudTh>Invitation Sent</MudTh>
-        <MudTh>Unique Invite Id</MudTh>
-        <MudTh>Invite Sent Date</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="party">
-        <MudTd DataLabel="Party Name">@party.PartyName</MudTd>
-        <MudTd DataLabel="Address">@party.Address</MudTd>
-        <MudTd DataLabel="Comments">@party.Comments</MudTd>
-        <MudTd DataLabel="Is Invited">@party.IsInvited</MudTd>
-        <MudTd DataLabel="Invitation Opened">@party.InvitationOpened</MudTd>
-        <MudTd DataLabel="Invitation Sent">@party.InvitationSent</MudTd>
-        <MudTd DataLabel="Unique Invite Id">@party.UniqueInviteId</MudTd>
-        <MudTd DataLabel="Invite Sent Date">@party.InviteSentDate.ToShortDateString()</MudTd>
-    </RowTemplate>
-</MudTable>
-
-
-<MudButton Color="Color.Primary" OnClick="AddGuest">Add Guest</MudButton>
-
-<MudTable Items="@guests" Dense="true">
-    <HeaderContent>
-        <MudTh>First Name</MudTh>
-        <MudTh>Last Name</MudTh>
-        <MudTh>Is Attending</MudTh>
-        <MudTh>Is Attending Rehersal Dinner</MudTh>
-        <MudTh>Invite Accepted</MudTh>
-        <MudTh>Invitation Opened</MudTh>
-        <MudTh>Age Bracket</MudTh>
-        <MudTh>Dietary Requirements</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="guest">
-        <MudTd DataLabel="First Name">@guest.FirstName</MudTd>
-        <MudTd DataLabel="Last Name">@guest.LastName</MudTd>
-        <MudTd DataLabel="Is Attending">@guest.IsAttending</MudTd>
-        <MudTd DataLabel="Is Attending Rehersal Dinner">@guest.IsAttendingRehersalDinner</MudTd>
-        <MudTd DataLabel="Invite Accepted">@guest.InviteAccepted.ToShortDateString()</MudTd>
-        <MudTd DataLabel="Invitation Opened">@guest.InvitationOpened.ToShortDateString()</MudTd>
-        <MudTd DataLabel="Age Bracket">@guest.AgeBracket.ToString()</MudTd>
-        <MudTd DataLabel="Dietary Requirements">@guest.DietaryRequirements?.ToString()</MudTd>
-    </RowTemplate>
-</MudTable>
-
-@code {
-    private List<Party> parties;
-    private List<Guest> guests;
-
-    protected override async Task OnInitializedAsync()
-    {
-        parties = await PartyService.GetPartiesAsync();
-        guests = await GuestService.GetGuestsAsync();
-    }
-
-    private async Task AddParty()
-    {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = DialogService.Show<AddPartyDialog>("Add Party", options);
-        var result = await dialog.Result;
-        if (!result.Cancelled)
-        {
-            var party = (Party)result.Data;
-            await PartyService.AddPartyAsync(party);
-            parties.Add(party);
-            StateHasChanged();
-        }
-    }
-
-    private async Task AddGuest()
-    {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        var dialog = DialogService.Show<AddGuestDialog>("Add Guest", options);
-        var result = await dialog.Result;
-        if (!result.Cancelled)
-        {
-            var guest = (Guest)result.Data;
-            await GuestService.AddGuestAsync(guest);
-            guests.Add(guest);
-            StateHasChanged();
-        }
-    }
-}*@

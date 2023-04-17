@@ -20,6 +20,12 @@ namespace Wedding.Services
             var parties =  await context.Party.ToListAsync();
             return parties;
         }
+        public async Task<List<Party>> GetAllAsync(bool includeGuests = true)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var parties = await context.Party.Include(x =>x.Guests).ToListAsync();
+            return parties;
+        }
 
         public async Task<Party> GetByIdAsync(Guid id)
         {

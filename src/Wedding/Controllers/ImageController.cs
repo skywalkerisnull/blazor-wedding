@@ -44,7 +44,7 @@ namespace Wedding.Controllers
 
         private IActionResult SaveFile(IFormFile file)
         {
-            // TODO: create an entry int he DB to allow for easy/quick tracking of the images that have been uploaded.
+            // TODO: create an entry in the DB to allow for easy/quick tracking of the images that have been uploaded.
             var mimeType = file.ContentType;
             var extension = Path.GetExtension(file.FileName);
             var fileName = $"{Guid.NewGuid()}{extension}";

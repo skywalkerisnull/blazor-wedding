@@ -60,24 +60,25 @@ namespace Wedding.Services
         //        context = context;
         //    }
 
-        //    public async Task<PagedResult<Guest>> GetPagedResultAsync(int skip, int take, string orderBy, SortDirection orderDirection)
-        //    {
-        //        var query = context.Guests.AsQueryable();
+        public async Task<PagedResult<Guest>> GetPagedResultAsync(int skip, int take, string orderBy, SortDirection orderDirection)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Guests.AsQueryable();
 
-        //        if (!string.IsNullOrEmpty(orderBy))
-        //        {
-        //            query = orderDirection == SortDirection.Ascending ? query.OrderBy(g => g.GetType().GetProperty(orderBy).GetValue(g)) : query.OrderByDescending(g => g.GetType().GetProperty(orderBy).GetValue(g));
-        //        }
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                query = orderDirection == SortDirection.Ascending ? query.OrderBy(g => g.GetType().GetProperty(orderBy).GetValue(g)) : query.OrderByDescending(g => g.GetType().GetProperty(orderBy).GetValue(g));
+            }
 
-        //        var totalItems = await query.CountAsync();
-        //        var items = await query.Skip(skip).Take(take).ToListAsync();
+            var totalItems = await query.CountAsync();
+            var items = await query.Skip(skip).Take(take).ToListAsync();
 
-        //        return new PagedResult<Guest>
-        //        {
-        //            TotalCount = totalItems,
-        //            Items = items
-        //        };
-        //    }
+            return new PagedResult<Guest>
+            {
+                TotalCount = totalItems,
+                Items = items
+            };
+        }
 
         //    public async Task<Guest> GetByIdAsync(Guid id)
         //    {
