@@ -159,7 +159,7 @@
         }
 
         List<Party> parties = new();
-        parties.FromExcelFile(tempFileName, 'c');
+        parties.FromExcelFile(tempFileName);
         _context.Party.UpdateRange(parties);
         IsUploading = false;
     }
