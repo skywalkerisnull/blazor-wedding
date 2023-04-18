@@ -340,3 +340,161 @@ namespace Wedding.Services
         }
     }
 }
+
+
+public class ExcelReader
+{
+    public List<Party> ReadExcelFile(string filePath)
+    {
+        // Create a list to store the parties
+        var parties = new List<Party>();
+
+        // Create a dictionary to store the guests by party id
+        var guestsByPartyId = new Dictionary<Guid, List<Guest>>();
+
+        // Open the workbook using ClosedXML
+        using (var workbook = new XLWorkbook(filePath))
+        {
+            // Get the first worksheet for parties
+            var partyWorksheet = workbook.Worksheet(1);
+
+            // Get the header row for parties
+            var partyHeaderRow = partyWorksheet.FirstRowUsed();
+
+            // Get the column indexes for each property for parties
+            var partyIdIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "PartyId").Address.ColumnNumber;
+            var partyNameIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "PartyName").Address.ColumnNumber;
+            var addressIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "Address").Address.ColumnNumber;
+            var commentsIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "Comments").Address.ColumnNumber;
+            var isInvitedIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "IsInvited").Address.ColumnNumber;
+            var invitationOpenedIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "InvitationOpened").Address.ColumnNumber;
+            var invitationSentIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "InvitationSent").Address.ColumnNumber;
+            var uniqueInviteIdIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "UniqueInviteId").Address.ColumnNumber;
+            var inviteSentDateIndex = partyHeaderRow.Cells().First(c => c.Value.ToString() == "InviteSentDate").Address.ColumnNumber;
+
+            // Loop through the data rows for parties
+            foreach (var dataRow in partyWorksheet.RowsUsed().Skip(1))
+            {
+                // Create a new party object
+                var party = new Party();
+
+                // Assign the values from each cell to the corresponding property for parties
+                party.PartyId = Guid.Parse(dataRow.Cell(partyIdIndex).Value.ToString());
+                party.PartyName = dataRow.Cell(partyNameIndex).Value.ToString();
+                party.Address = dataRow.Cell(addressIndex).Value.ToString();
+                party.Comments = dataRow.Cell(commentsIndex).Value.ToString();
+                party.IsInvited = bool.Parse(dataRow.Cell(isInvitedIndex).Value.ToString());
+                party.InvitationOpened = bool.Parse(dataRow.Cell(invitationOpenedIndex).Value.ToString());
+                party.InvitationSent = bool.Parse(dataRow.Cell(invitationSentIndex).Value.ToString());
+                party.UniqueInviteId = dataRow.Cell(uniqueInviteIdIndex).Value.ToString();
+                party.InviteSentDate = DateTime.Parse(dataRow.Cell(inviteSentDateIndex).Value.ToString());
+
+                // Add the party to the list
+                parties.Add(party);
+
+                // Initialize an empty list of guests for this party id
+                guestsByPartyId[party.PartyId] = new List<Guest>();
+            }
+
+            // Get the second worksheet for guests
+            var guestWorksheet = workbook.Worksheet(2);
+
+            // Get the header row for guests
+            var guestHeaderRow = guestWorksheet.FirstRowUsed();
+
+            // Get the column indexes for each property for guests
+            var guestIdIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "GuestId").Address.ColumnNumber;
+            var firstNameIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "FirstName").Address.ColumnNumber;
+            var lastNameIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "LastName").Address.ColumnNumber;
+            var isAttendingIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "IsAttending").Address.ColumnNumber;
+            var isAttendingRehersalDinnerIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "IsAttendingRehersalDinner").Address.ColumnNumber;
+            var inviteAcceptedIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "InviteAccepted").Address.ColumnNumber;
+            var invitationOpenedIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "InvitationOpened").Address.ColumnNumber;
+            var ageBracketIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "AgeBracket").Address.ColumnNumber;
+            var commonRequirementsIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "CommonRequirements").Address.ColumnNumber;
+            var allergiesIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "Allergies").Address.ColumnNumber;
+            var otherIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "Other").Address.ColumnNumber;
+            var partyIdIndex = guestHeaderRow.Cells().First(c => c.Value.ToString() == "PartyId").Address.ColumnNumber;
+
+            // Loop through the data rows for guests
+            foreach (var dataRow in guestWorksheet.RowsUsed().Skip(1))
+            {
+                // Create a new guest object
+                var guest = new Guest();
+
+                // Assign the values from each cell to the corresponding property for guests
+                guest.GuestId = Guid.Parse(dataRow.Cell(guestIdIndex).Value.ToString());
+                guest.FirstName = dataRow.Cell(firstNameIndex).Value.ToString();
+                guest.LastName = dataRow.Cell(lastNameIndex).Value.ToString();
+                guest.IsAttending = ParseNullableBool(dataRow.Cell(isAttendingIndex).Value.ToString());
+                guest.IsAttendingRehersalDinner = ParseNullableBool(dataRow.Cell(isAttendingRehersalDinnerIndex).Value.ToString());
+                guest.InviteAccepted = ParseNullableDateTime(dataRow.Cell(inviteAcceptedIndex).Value.ToString());
+                guest.InvitationOpened = ParseNullableDateTime(dataRow.Cell(invitationOpenedIndex).Value.ToString());
+                guest.AgeBracket = (AgeBracket)Enum.Parse(typeof(AgeBracket), dataRow.Cell(ageBracketIndex).Value.ToString());
+                guest.CommonRequirements = ParseCommonRequirements(dataRow.Cell(commonRequirementsIndex).Value.ToString());
+                guest.Allergies = dataRow.Cell(allergiesIndex).Value.ToString();
+                guest.Other = dataRow.Cell(otherIndex).Value.ToString();
+                guest.PartyId = Guid.Parse(dataRow.Cell(partyIdIndex).Value.ToString());
+
+                // Add the guest to the list of guests for this party id
+                guestsByPartyId[guest.PartyId].Add(guest);
+            }
+
+            // Loop through each party and assign the list of guests from the dictionary
+            foreach (var party in parties)
+            {
+                party.Guests = guestsByPartyId[party.PartyId];
+            }
+        }
+
+        // Return the list of parties
+        return parties;
+    }
+
+    // A helper method to parse a string into a nullable bool
+    private bool? ParseNullableBool(string boolString)
+    {
+        // If the string is empty, return null
+        if (string.IsNullOrEmpty(boolString))
+        {
+            return null;
+        }
+
+        // Otherwise, parse the string as a bool and return it
+        return bool.Parse(boolString);
+    }
+
+    // A helper method to parse a string into a nullable DateTime
+    private DateTime? ParseNullableDateTime(string dateTimeString)
+    {
+        // If the string is empty, return null
+        if (string.IsNullOrEmpty(dateTimeString))
+        {
+            return null;
+        }
+
+        // Otherwise, parse the string as a DateTime and return it
+        return DateTime.Parse(dateTimeString);
+    }
+
+    // A helper method to parse a string of common dietary requirements into a list of CommonDietaryRequirements enums
+    private List<CommonDietaryRequirements> ParseCommonRequirements(string requirementsString)
+    {
+        // Create a list to store the requirements
+        var requirements = new List<CommonDietaryRequirements>();
+
+        // Split the string by comma
+        var requirementStrings = requirementsString.Split(',');
+
+        // Loop through each requirement string
+        foreach (var requirementString in requirementStrings)
+        {
+            // Parse the requirement string as a CommonDietaryRequirements enum and add it to the list
+            var requirement = (CommonDietaryRequirements)Enum.Parse(typeof(CommonDietaryRequirements), requirementString);
+            requirements.Add(requirement);
+        }
+
+        // Return the list of requirements
+        return requirements;
+    }
+}
