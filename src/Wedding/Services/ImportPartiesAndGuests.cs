@@ -246,9 +246,9 @@ namespace Wedding.Services
         public static bool FromExcelFile(this List<Party> parties, string filename, char thisOne)
         {
             bool Success = false;
-            //try
-            //{
-            using (var workbook = new XLWorkbook(filename))
+            try
+            {
+                using (var workbook = new XLWorkbook(filename))
             {
                 //Import parties and guests from the first worksheet
                 var worksheet = workbook.Worksheet("Parties and Guests");
@@ -264,18 +264,20 @@ namespace Wedding.Services
                 {
                     var party = new Party();
                     var guest = new Guest();
+
                     foreach (var cell in row.CellsUsed())
                     {
                         var columnName = columns[cell.Address.ColumnNumber];
                         var partyProperty = party.GetType().GetProperty(columnName);
                         if (partyProperty != null)
                         {
-                            partyProperty.SetValue(party, Convert.ChangeType(cell.Value, partyProperty.PropertyType));
+                            partyProperty.SetValue(party, Guid.Parse(cell.Value.ToString()));
                         }
+
                         var guestProperty = guest.GetType().GetProperty(columnName);
                         if (guestProperty != null)
                         {
-                            guestProperty.SetValue(guest, Convert.ChangeType(cell.Value, guestProperty.PropertyType));
+                            guestProperty.SetValue(guest, Guid.Parse(cell.Value.ToString()));
                         }
                     }
 
@@ -329,13 +331,12 @@ namespace Wedding.Services
 
                 Success = true;
             }
-            //}
-            //catch
-            //{
-            //    //Handle exception
-            //}
+            }
+            catch (Exception ex) 
+            { 
+                Success = false; 
+            }
             return Success;
         }
-
     }
 }
