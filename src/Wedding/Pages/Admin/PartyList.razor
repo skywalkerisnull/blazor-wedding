@@ -1,17 +1,10 @@
 ﻿@page "/parties"
-@using BlazorDownloadFile;
-@using System.Net;
 @using Wedding.Services
-@using System.IO
-@using System.Net.Http
-@using System.Net.Http.Headers
 @inject IPartyService partyService
 @inject IDialogService dialogService
 @inject IJSRuntime _js
 @inject NavigationManager _navigation
-@inject NavigationManager NavigationManager
-@inject HttpClient _http
-@inject IBlazorDownloadFileService _downloadService
+@inject IPartyService _partyService
 
 <AuthorizeView>
     <Authorized>
@@ -28,10 +21,17 @@
             </MudItem>
 
             <MudItem xs="6">
-                <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudDownload" OnClick="DownloadGuests">
-                    Download Guests
-                </MudButton>
-                <MudProgressCircular Indeterminate="false" Visible="@IsLoading" />
+            <MudButton Disabled="@IsLoading" OnClick="DownloadGuests" Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudDownload">
+                @if (IsLoading)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Downloading</MudText>
+                }
+                else
+                {
+                    <MudText>Download</MudText>
+                }
+            </MudButton>
             </MudItem>
 
         </MudGrid>
@@ -150,27 +150,13 @@
     private async Task DownloadGuests()
     {
         IsLoading = true;
-
-        var cookie = await _js.InvokeAsync<string>("getCookie", ".AspNetCore.Identity.Application");
-        var token = await _js.InvokeAsync<string>("localStorage.getItem", "authToken");
-        // Set the cookie or token to the HttpClient request header
-        if (!string.IsNullOrEmpty(cookie))
-        {
-            _http.DefaultRequestHeaders.Add("Cookie", cookie);
-        }
-        if (!string.IsNullOrEmpty(token))
-        {
-            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        _http.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-        var response = await _http.GetAsync("/api/guestlist/getguestlist");
-
-        var bytes = await response.Content.ReadAsByteArrayAsync();
-        // Stream the file content to a raw binary data buffer on the client
-        var now = DateTime.UtcNow.ToString();
-        await _js.InvokeVoidAsync("downloadFileFromStream", bytes, $"guests-{now}.xlsx");
-        
+        var parties = await _partyService.GetAllAsync(true);
+        // TODO: This is not great, fix this up!!!
+        parties.ToExcelFile("./temp.xlsx", true);
+        var fileStream = File.OpenRead("./temp.xlsx");
+        var fileName = "guests.xlsx";
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+        await _js.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         IsLoading = false;
     }
 }

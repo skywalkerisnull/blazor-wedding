@@ -32,7 +32,6 @@ builder.Services.AddScoped<ImageController>();
 
 builder.Services.AddScoped<DialogService>();
 
-
 builder.Services.AddMudServices();
 var app = builder.Build();
 
