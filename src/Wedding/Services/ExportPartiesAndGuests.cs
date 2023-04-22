@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using System.Runtime.Intrinsics.Arm;
 using Wedding.Data.Entities;
 
 namespace Wedding.Services
@@ -105,7 +106,7 @@ namespace Wedding.Services
             return Success;
         }
 
-        public static bool ToExcelFile(this List<Party> parties, string filename, bool partyAndGuests)
+        public static bool ToExcelFile(this List<Party> parties, string filename, Uri urlBase)
         {
             bool Success = false;
             //try
@@ -135,6 +136,7 @@ namespace Wedding.Services
                 worksheet.Cell(1, 19).Value = "Allergies";
                 worksheet.Cell(1, 20).Value = "Other";
                 worksheet.Cell(1, 21).Value = "SaveTheDateSent";
+                worksheet.Cell(1, 22).Value = "QR Code Link";
 
                 //Write the data
                 int rowIndex = 2;
@@ -163,6 +165,9 @@ namespace Wedding.Services
                         worksheet.Cell(rowIndex, 19).Value = guest.Allergies;
                         worksheet.Cell(rowIndex, 20).Value = guest.Other;
                         worksheet.Cell(rowIndex, 21).Value = party.SaveTheDateSent.ToString();
+
+                        var url = new UriBuilder(urlBase.ToString(), $"qrcodes/{party.UniqueInviteId}.png");
+                        worksheet.Cell(rowIndex, 22).Value = url.ToString();
 
                         //Increment the row index
                         rowIndex++;

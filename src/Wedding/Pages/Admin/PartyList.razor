@@ -1,5 +1,6 @@
 ﻿@page "/parties"
 @using Wedding.Services
+@using Microsoft.AspNetCore.Http.Extensions
 @inject IPartyService partyService
 @inject IDialogService dialogService
 @inject IJSRuntime _js
@@ -94,6 +95,8 @@
     private bool Busy = false;
     private bool IsDownloading = false;
     private bool IsUploading = false;
+    private string url = HttpContext.Request.GetDisplayUrl();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -172,10 +175,13 @@
     {
         IsDownloading = true;
         var parties = await _partyService.GetAllAsync(true);
-        // TODO: This is not great, fix this up!!!
-        parties.ToExcelFile("./temp.xlsx", true);
-        var fileStream = File.OpenRead("./temp.xlsx");
-        var fileName = "guests.xlsx";
+
+        var now = DateTime.UtcNow.ToString("yyyyMMddTHHmmss");
+        var url = new Uri(_navigation.BaseUri);
+
+        parties.ToExcelFile($"./guests-{now}.xlsx", url);
+        var fileStream = File.OpenRead($"./guests-{now}.xlsx");
+        var fileName = $"guests-{now}.xlsx";
         using var streamRef = new DotNetStreamReference(stream: fileStream);
         await _js.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         IsDownloading = false;
