@@ -68,7 +68,6 @@
                 <MudTh><MudTableSortLabel SortLabel="invite_id" SortBy="@((Party p) => p.UniqueInviteId)">Invite Id</MudTableSortLabel></MudTh>
             </HeaderContent>
 
-
             <RowTemplate Context="party">
                 <MudTd DataLabel="Name">@party.PartyName</MudTd>
                 <MudTd DataLabel="Address">@party.Address</MudTd>
@@ -248,6 +247,7 @@
             await partyService.AddAsync(party);
             parties.Add(party);
             StateHasChanged();
+            table.ReloadServerData();
         }
     }
 
@@ -262,6 +262,7 @@
             var index = parties.IndexOf(party);
             parties[index] = updatedParty;
             StateHasChanged();
+            table.ReloadServerData();
         }
     }
 
