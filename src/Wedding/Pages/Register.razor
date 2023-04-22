@@ -5,8 +5,8 @@
 @inject SignInManager<IdentityUser> _signInManager
 @inject NavigationManager _navigationManager
 
-<h1>Login or Register</h1>
-
+<h2>Login or Register</h2>
+<MudAlert Severity="Severity.Error" Variant="Variant.Filled" Visible="@loginErrorVisible">@loginErrorMessage</MudAlert>
 <MudTabs>
     <MudTabPanel Text="Login">
         <MudForm Model="@loginModel" OnValidSubmit="LoginUser">
@@ -28,17 +28,21 @@
 @code {
     private LoginModel loginModel = new LoginModel();
     private RegisterModel registerModel = new RegisterModel();
+    private bool loginErrorVisible = false;
+    private string loginErrorMessage = "";
 
     private async Task LoginUser()
     {
         var result = await _signInManager.PasswordSignInAsync(loginModel.Email, loginModel.Password, false, false);
         if (result.Succeeded)
         {
+            loginErrorVisible = false;
             _navigationManager.NavigateTo("/", true);
         }
         else
         {
-            // show error message
+            loginErrorVisible = true;
+            loginErrorMessage = "Invalid email or password";
         }
     }
 
