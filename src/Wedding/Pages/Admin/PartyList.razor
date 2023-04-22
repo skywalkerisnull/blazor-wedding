@@ -56,7 +56,8 @@
                 <MudTh>Address</MudTh>
                 <MudTh>Comments</MudTh>
                 <MudTh>Invited</MudTh>
-                <MudTh>Sent</MudTh>
+                <MudTh>Invite Sent</MudTh>
+                <MudTh>Save Date Sent</MudTh>
                 <MudTh>Actions</MudTh>
                 <MudTh>Invite Id</MudTh>
             </HeaderContent>
@@ -67,10 +68,10 @@
                 <MudTd DataLabel="Invited">
                     <MudSwitch Checked="@party.IsInvited" Disabled="true"/>
                 </MudTd>
-                <MudTd DataLabel="Sent">
+                <MudTd DataLabel="Invite Sent">
                     <MudSwitch Checked="@party.InvitationSent" Disabled="true"/>
                 </MudTd>
-                <MudTd DataLabel="Sent">
+                <MudTd DataLabel="Save the Date Sent">
                     <MudSwitch Checked="@party.SaveTheDateSent" Disabled="true" />
                 </MudTd>
                 <MudTd DataLabel="Actions">
