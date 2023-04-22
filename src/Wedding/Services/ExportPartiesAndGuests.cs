@@ -166,8 +166,9 @@ namespace Wedding.Services
                         worksheet.Cell(rowIndex, 20).Value = guest.Other;
                         worksheet.Cell(rowIndex, 21).Value = party.SaveTheDateSent.ToString();
 
-                        var url = new UriBuilder(urlBase.ToString(), $"qrcodes/{party.UniqueInviteId}.png");
-                        worksheet.Cell(rowIndex, 22).Value = url.ToString();
+                        var url = new UriBuilder(urlBase.AbsoluteUri);
+                        url.Path += $"qrcodes/{party.UniqueInviteId}.png";
+                        worksheet.Cell(rowIndex, 22).Value = url.Uri.ToString();
 
                         //Increment the row index
                         rowIndex++;
