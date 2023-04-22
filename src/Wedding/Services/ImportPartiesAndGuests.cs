@@ -432,6 +432,7 @@ namespace Wedding.Services
                     // TODO: This is why it is breaking! The same column name is in twice.
 
                     guest.AgeBracket = (AgeBracket)Enum.Parse(typeof(AgeBracket), dataRow.Cell(ageBracketIndex).Value.ToString());
+
                     guest.CommonRequirements = ParseCommonRequirements(dataRow.Cell(commonRequirementsIndex).Value.ToString());
                     guest.Allergies = dataRow.Cell(allergiesIndex).Value.ToString();
                     guest.Other = dataRow.Cell(otherIndex).Value.ToString();
@@ -484,12 +485,20 @@ namespace Wedding.Services
             // Create a list to store the requirements
             var requirements = new List<CommonDietaryRequirements>();
 
+            if (string.IsNullOrEmpty(requirementsString))
+            {
+                return requirements;
+            }
+
             // Split the string by comma
             var requirementStrings = requirementsString.Split(',');
 
             // Loop through each requirement string
             foreach (var requirementString in requirementStrings)
             {
+                //input.Split(',').Select(s => Enum.TryParse(s, out Color c) ? c : default);
+
+
                 // Parse the requirement string as a CommonDietaryRequirements enum and add it to the list
                 var requirement = (CommonDietaryRequirements)Enum.Parse(typeof(CommonDietaryRequirements), requirementString);
                 requirements.Add(requirement);
