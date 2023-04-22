@@ -86,7 +86,6 @@ namespace Wedding.Services
                     worksheet.Cell(i + 2, 4).Value = guest.IsAttending.ToString();
                     worksheet.Cell(i + 2, 5).Value = guest.IsAttendingRehersalDinner.ToString();
                     worksheet.Cell(i + 2, 6).Value = guest.InviteAccepted;
-                    worksheet.Cell(i + 2, 7).Value = guest.InvitationOpened;
                     worksheet.Cell(i + 2, 8).Value = guest.AgeBracket.ToString();
                     worksheet.Cell(i + 2, 9).Value = string.Join(",", guest.CommonRequirements);
                     worksheet.Cell(i + 2, 10).Value = guest.Allergies;
@@ -158,7 +157,6 @@ namespace Wedding.Services
                         worksheet.Cell(rowIndex, 13).Value = guest.IsAttending.ToString();
                         worksheet.Cell(rowIndex, 14).Value = guest.IsAttendingRehersalDinner.ToString();
                         worksheet.Cell(rowIndex, 15).Value = guest.InviteAccepted;
-                        worksheet.Cell(rowIndex, 16).Value = guest.InvitationOpened;
                         worksheet.Cell(rowIndex, 17).Value = guest.AgeBracket.ToString();
                         worksheet.Cell(rowIndex, 18).Value = string.Join(",", guest.CommonRequirements);
                         worksheet.Cell(rowIndex, 19).Value = guest.Allergies;

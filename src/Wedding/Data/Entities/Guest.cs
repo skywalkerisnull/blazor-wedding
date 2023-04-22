@@ -15,7 +15,6 @@ namespace Wedding.Data.Entities
         public bool? IsAttending { get; set; }
         public bool? IsAttendingRehersalDinner { get; set; }
         public DateTime? InviteAccepted { get; set; }
-        public DateTime? InvitationOpened { get; set; }
         public AgeBracket AgeBracket { get; set; }
         public List<CommonDietaryRequirements> CommonRequirements { get; set; }
         public string? Allergies { get; set; }

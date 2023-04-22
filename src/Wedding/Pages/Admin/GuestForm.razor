@@ -24,9 +24,6 @@
                         <MudDatePicker Label="Invite Accepted" @bind-Date="@guest.InviteAccepted"/>
                     </MudItem>
                     <MudItem xs="12">
-                        <MudDatePicker Label="Invitation Opened" @bind-Date="@guest.InvitationOpened"/>
-                    </MudItem>
-                    <MudItem xs="12">
                         <MudSelect Required="true" Label="Age Bracket" @bind-Value="@guest.AgeBracket">
                             @foreach (var ageBracket in Enum.GetValues<AgeBracket>())
                             {

@@ -429,9 +429,6 @@ namespace Wedding.Services
 
 
                     // TODO: This is why it is breaking! The same column name is in twice.
-                    guest.InvitationOpened = ParseNullableDateTime(dataRow.Cell(invitationOpenedIndex).Value.ToString());
-
-
 
                     guest.AgeBracket = (AgeBracket)Enum.Parse(typeof(AgeBracket), dataRow.Cell(ageBracketIndex).Value.ToString());
                     guest.CommonRequirements = ParseCommonRequirements(dataRow.Cell(commonRequirementsIndex).Value.ToString());
