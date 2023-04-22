@@ -46,22 +46,29 @@
 
         </MudGrid>
 
-        <MudTable Items="@parties" Hover="true" Dense="true">
+        <MudTable Items="@parties" Hover="true" @ref="table" SortLabel="Sort By" Filter="new Func<Party,bool>(FilterFunc)"
+                  @bind-SelectedItem="selectedItem1" ServerData="@(new Func<TableState, Task<TableData<Party>>>(ServerReload))">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Parties</MudText>
-                <MudSpacer/>
+                <MudSpacer />
+                <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <MudSpacer />
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddParty">Add Party</MudButton>
             </ToolBarContent>
-            <HeaderContent>
-                <MudTh>Name</MudTh>
-                <MudTh>Address</MudTh>
-                <MudTh>Comments</MudTh>
-                <MudTh>Invited</MudTh>
-                <MudTh>Invite Sent</MudTh>
-                <MudTh>Save Date Sent</MudTh>
-                <MudTh>Actions</MudTh>
-                <MudTh>Invite Id</MudTh>
+
+            <HeaderContent> 
+                <MudTh><MudTableSortLabel SortLabel="party_name" SortBy="@((Party p) => p.PartyName)" InitialDirection="SortDirection.Ascending">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="address" SortBy="@((Party p) => p.Address)">Address</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="comments" SortBy="@((Party p) => p.Comments)">Comments</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="invited" SortBy="@((Party p) => p.IsInvited)">Invited</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="invite_sent" SortBy="@((Party p) => p.InvitationSent)">Invite Sent</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="date_sent" SortBy="@((Party p) => p.SaveTheDateSent)">Save Date Sent</MudTableSortLabel></MudTh>
+                <MudTh><MudTh>Actions</MudTh></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="invite_id" SortBy="@((Party p) => p.UniqueInviteId)">Invite Id</MudTableSortLabel></MudTh>
             </HeaderContent>
+
+
             <RowTemplate Context="party">
                 <MudTd DataLabel="Name">@party.PartyName</MudTd>
                 <MudTd DataLabel="Address">@party.Address</MudTd>
@@ -86,6 +93,15 @@
                     <MudLink href="@($"/qrcodes/{party.UniqueInviteId}.png")">@party.UniqueInviteId</MudLink>
                     </MudTd>
             </RowTemplate>
+            <NoRecordsContent>
+                <MudText>No Party or Guest records found</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <MudText>Loading...</MudText>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
         </MudTable>
     </Authorized>
 </AuthorizeView>
@@ -94,7 +110,118 @@
     private List<Party> parties;
     private bool Busy = false;
     private bool IsDownloading = false;
-    private bool IsUploading = false;
+    private bool IsUploading = false; 
+    private string searchString = "";
+    private Party selectedItem1 = null;
+    private MudTable<Party> table;
+    private int totalItems;
+
+    private IEnumerable<Party> pagedData;
+
+    private async Task<TableData<Party>> LoadData(TableState state)
+    { 
+        parties = await partyService.GetAllAsync();
+        if (!string.IsNullOrEmpty(state.SortLabel))
+        {
+            switch (state.SortLabel)
+            {
+                case "Name":
+                    parties = state.SortDirection == SortDirection.Ascending ? parties.OrderBy(p => p.PartyName).ToList() : parties.OrderByDescending(p => p.PartyName).ToList();
+                    break;
+                case "Address":
+                    parties = state.SortDirection == SortDirection.Ascending ? parties.OrderBy(p => p.Address).ToList() : parties.OrderByDescending(p => p.Address).ToList();
+                    break;
+                case "Comments":
+                    parties = state.SortDirection == SortDirection.Ascending ? parties.OrderBy(p => p.Comments).ToList() : parties.OrderByDescending(p => p.Comments).ToList();
+                    break;
+                case "Invited":
+                    parties = state.SortDirection == SortDirection.Ascending ? parties.OrderBy(p => p.IsInvited).ToList() : parties.OrderByDescending(p => p.IsInvited).ToList();
+                    break;
+                case "Invite Sent":
+                    parties = state.SortDirection == SortDirection.Ascending ? parties.OrderBy(p => p.InvitationSent).ToList() : parties.OrderByDescending(p => p.InvitationSent).ToList();
+                    break;
+                case "Save Date Sent":
+                    parties = state.SortDirection == SortDirection.Ascending ? parties.OrderBy(p => p.SaveTheDateSent).ToList() : parties.OrderByDescending(p => p.SaveTheDateSent).ToList();
+                    break;
+                case "Invite Id":
+                    parties = state.SortDirection == SortDirection.Ascending ? parties.OrderBy(p => p.PartyId).ToList() : parties.OrderByDescending(p => p.PartyId).ToList();
+                    break;
+            }
+        }
+
+        // return a TableData object with the sorted data and the total number of items
+        return new TableData<Party>() { TotalItems = parties.Count, Items = parties };
+    }
+
+    private void OnSearch(string text)
+    {
+        searchString = text;
+        table.ReloadServerData();
+    }
+
+    private async Task<TableData<Party>> ServerReload(TableState state)
+    {
+        IEnumerable<Party> data = await partyService.GetAllAsync(true);
+        await Task.Delay(300);
+        data = data.Where(element =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            foreach (var guest in element.Guests)
+            {
+                if (guest.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+                if (guest.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }).ToArray();
+
+        totalItems = data.Count();
+
+        switch (state.SortLabel)
+        {
+            case "party_name":
+                data = data.OrderByDirection(state.SortDirection, o => o.PartyName);
+                break;
+            case "address":
+                data = data.OrderByDirection(state.SortDirection, o => o.Address);
+                break;
+            case "comments":
+                data = data.OrderByDirection(state.SortDirection, o => o.Comments);
+                break;
+            case "invited":
+                data = data.OrderByDirection(state.SortDirection, o => o.IsInvited);
+                break;
+            case "invite_sent":
+                data = data.OrderByDirection(state.SortDirection, o => o.InvitationSent);
+                break;
+            case "date_sent":
+                data = data.OrderByDirection(state.SortDirection, o => o.InviteSentDate);
+                break;
+        }
+
+        pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        return new TableData<Party>() { TotalItems = totalItems, Items = pagedData };
+    }
+
+    private bool FilterFunc(Party element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        foreach (var guest in element.Guests)
+        {
+            if (guest.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (guest.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
 
     protected override async Task OnInitializedAsync()
     {
