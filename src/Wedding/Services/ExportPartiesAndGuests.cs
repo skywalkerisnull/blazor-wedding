@@ -134,6 +134,7 @@ namespace Wedding.Services
                 worksheet.Cell(1, 18).Value = "CommonRequirements";
                 worksheet.Cell(1, 19).Value = "Allergies";
                 worksheet.Cell(1, 20).Value = "Other";
+                worksheet.Cell(1, 21).Value = "SaveTheDateSent";
 
                 //Write the data
                 int rowIndex = 2;
@@ -161,6 +162,7 @@ namespace Wedding.Services
                         worksheet.Cell(rowIndex, 18).Value = string.Join(",", guest.CommonRequirements);
                         worksheet.Cell(rowIndex, 19).Value = guest.Allergies;
                         worksheet.Cell(rowIndex, 20).Value = guest.Other;
+                        worksheet.Cell(rowIndex, 21).Value = party.SaveTheDateSent.ToString();
 
                         //Increment the row index
                         rowIndex++;

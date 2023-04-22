@@ -363,6 +363,7 @@ namespace Wedding.Services
                 var invitationSentIndex = headerRow.Cells().First(c => c.Value.ToString() == "InvitationSent").Address.ColumnNumber;
                 var uniqueInviteIdIndex = headerRow.Cells().First(c => c.Value.ToString() == "UniqueInviteId").Address.ColumnNumber;
                 var inviteSentDateIndex = headerRow.Cells().First(c => c.Value.ToString() == "InviteSentDate").Address.ColumnNumber;
+                var saveTheDateSentIndex = headerRow.Cells().First(c => c.Value.ToString() == "SaveTheDateSent").Address.ColumnNumber;
 
                 // Get the first worksheet for parties
                 var guestIdIndex = headerRow.Cells().First(c => c.Value.ToString() == "GuestId").Address.ColumnNumber;
@@ -371,7 +372,6 @@ namespace Wedding.Services
                 var isAttendingIndex = headerRow.Cells().First(c => c.Value.ToString() == "IsAttending").Address.ColumnNumber;
                 var isAttendingRehersalDinnerIndex = headerRow.Cells().First(c => c.Value.ToString() == "IsAttendingRehersalDinner").Address.ColumnNumber;
                 var inviteAcceptedIndex = headerRow.Cells().First(c => c.Value.ToString() == "InviteAccepted").Address.ColumnNumber;
-                //var invitationOpenedIndex = headerRow.Cells().First(c => c.Value.ToString() == "InvitationOpened").Address.ColumnNumber;
                 var ageBracketIndex = headerRow.Cells().First(c => c.Value.ToString() == "AgeBracket").Address.ColumnNumber;
                 var commonRequirementsIndex = headerRow.Cells().First(c => c.Value.ToString() == "CommonRequirements").Address.ColumnNumber;
                 var allergiesIndex = headerRow.Cells().First(c => c.Value.ToString() == "Allergies").Address.ColumnNumber;
@@ -408,6 +408,7 @@ namespace Wedding.Services
                         party.InvitationSent = bool.Parse(dataRow.Cell(invitationSentIndex).Value.ToString());
                         party.UniqueInviteId = dataRow.Cell(uniqueInviteIdIndex).Value.ToString();
                         party.InviteSentDate = DateTime.Parse(dataRow.Cell(inviteSentDateIndex).Value.ToString());
+                        party.SaveTheDateSent = bool.Parse(dataRow.Cell(saveTheDateSentIndex).Value.ToString());
 
                         // Add the party to the list
                         parties.Add(party);

@@ -14,6 +14,7 @@ namespace Wedding.Data.Entities
         public bool IsInvited { get; set; } = true;
         public bool InvitationOpened { get; set; } = false;
         public bool InvitationSent { get; set; } = false;
+        public bool SaveTheDateSent { get; set; } = false;
 
         [Required]
         public string UniqueInviteId { get; set; }
