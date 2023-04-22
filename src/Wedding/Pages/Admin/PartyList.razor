@@ -70,6 +70,9 @@
                 <MudTd DataLabel="Sent">
                     <MudSwitch Checked="@party.InvitationSent" Disabled="true"/>
                 </MudTd>
+                <MudTd DataLabel="Sent">
+                    <MudSwitch Checked="@party.SaveTheDateSent" Disabled="true" />
+                </MudTd>
                 <MudTd DataLabel="Actions">
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditParty(party))">Edit</MudButton>
                     <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteParty(party))">Delete</MudButton>
