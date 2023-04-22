@@ -1,0 +1,72 @@
+﻿@page "/register"
+@using Microsoft.AspNetCore.Identity
+@using MudBlazor
+@inject UserManager<IdentityUser> _userManager
+@inject SignInManager<IdentityUser> _signInManager
+@inject NavigationManager _navigationManager
+
+<h1>Login or Register</h1>
+
+<MudTabs>
+    <MudTabPanel Text="Login">
+        <MudForm Model="@loginModel" OnValidSubmit="LoginUser">
+            <MudTextField Label="Email" @bind-Value="@loginModel.Email" For="@(() => loginModel.Email)" Required="true" />
+            <MudTextField Label="Password" @bind-Value="@loginModel.Password" For="@(() => loginModel.Password)" Required="true" InputType="InputType.Password" />
+            <MudButton Type="ButtonType.Submit" Color="Color.Primary">Login</MudButton>
+        </MudForm>
+    </MudTabPanel>
+    <MudTabPanel Text="Register">
+        <MudForm Model="@registerModel" OnValidSubmit="RegisterUser">
+            <MudTextField Label="Email" @bind-Value="@registerModel.Email" For="@(() => registerModel.Email)" Required="true" />
+            <MudTextField Label="Password" @bind-Value="@registerModel.Password" For="@(() => registerModel.Password)" Required="true" InputType="InputType.Password" />
+            <MudTextField Label="Confirm Password" @bind-Value="@registerModel.ConfirmPassword" For="@(() => registerModel.ConfirmPassword)" Required="true" InputType="InputType.Password" />
+            <MudButton Type="ButtonType.Submit" Color="Color.Primary">Register</MudButton>
+        </MudForm>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private RegisterModel registerModel = new RegisterModel();
+
+    private async Task LoginUser()
+    {
+        var result = await _signInManager.PasswordSignInAsync(loginModel.Email, loginModel.Password, false, false);
+        if (result.Succeeded)
+        {
+            _navigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            // show error message
+        }
+    }
+
+    private async Task RegisterUser()
+    {
+        var user = new IdentityUser { UserName = registerModel.Email, Email = registerModel.Email };
+        var result = await _userManager.CreateAsync(user, registerModel.Password);
+        if (result.Succeeded)
+        {
+            await _signInManager.SignInAsync(user, false);
+            _navigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            // show error message
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class RegisterModel
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string ConfirmPassword { get; set; }
+    }
+}
