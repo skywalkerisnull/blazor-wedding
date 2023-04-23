@@ -16,49 +16,94 @@
 @inject NavigationManager _navigationManager
 @inject ISnackbar Snackbar
 @inject IConfiguration _Configuration
+@inject IJSRuntime JsRuntime
 
+@if (_Configuration.GetValue("AllowAccountRegistration", false)){
 <h2>Login or Register</h2>
+}
+else{
+<h2>Login</h2>
+}
 
-<MudTabs>
-    <MudTabPanel Text="Login">
-        <h3>Login</h3>
-        <MudGrid>
-            <MudItem xs="12" sm="7">
-                <MudPaper Class="pa-4">
-                    <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
-                        <MudTextField T="string" 
-                                      Label="Email" 
-                                      Required="true" 
-                                      RequiredError="Email is required!"
-                                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is an invalid format"})" @bind-Value="Email" />
-                        <MudTextField T="string" 
-                                      Label="Password" 
-                                      HelperText="Password"
-                                      InputType="InputType.Password" 
-                                      Required="true" 
-                                      RequiredError="Password is required!" 
-                                      @bind-Value="password"/>
-                        <div class="d-flex align-center justify-space-between">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@LoginClicked">Login</MudButton>
-                        </div>
-                    </MudForm>
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-    </MudTabPanel>
-    @if (_Configuration.GetValue("AllowAccountRegistration", false)){
-        <MudTabPanel Text="Register">
-            <MudText Typo="Typo.h5">Register</MudText>
-            <MudForm @ref="registrationForm" Model="@registerModel" Validation="@Validation">
-                <MudTextField @bind-Value="registerModel.Email" Label="Email" Required="true" For="@(() => registerModel.Email)" />
-                <MudTextField @bind-Value="registerModel.Password" Label="Password" Required="true" For="@(() => registerModel.Password)" T="string" InputType="InputType.Password" />
-                <MudTextField @bind-Value="registerModel.ConfirmPassword" Label="Confirm Password" Required="true" For="@(() => registerModel.ConfirmPassword)" T="string" InputType="InputType.Password" />
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@RegisterUser">Register</MudButton>
-            </MudForm>
-        </MudTabPanel>
-        }
+<AuthorizeView>
+    <NotAuthorized>
+        <MudTabs>
+            <MudTabPanel Text="Login">
+                <h3>Login</h3>
+                <MudGrid>
+                    <MudItem xs="12" sm="7">
+                        <MudPaper Class="pa-4">
+                            <MudForm @ref="loginForm" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
+                                <MudTextField T="string"
+                                              Label="Email"
+                                              Required="true"
+                                              RequiredError="Email is required!"
+                                              Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is an invalid format"})" 
+                                              @bind-Value="Email" />
+                                <MudTextField T="string"
+                                              Label="Password"
+                                              HelperText="Password"
+                                              InputType="InputType.Password"
+                                              Required="true"
+                                              RequiredError="Password is required!"
+                                              @bind-Value="password" />
+                                <div class="d-flex align-center justify-space-between">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@LoginClicked">Login</MudButton>
+                                </div>
+                            </MudForm>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+            @if (_Configuration.GetValue("AllowAccountRegistration", false))
+            {
+                <MudTabPanel Text="Register">
+                    <h3>Register</h3>
+                    <MudGrid>
+                        <MudItem xs="12" sm="7">
+                        <MudPaper Class="pa-4">
+                            <MudForm @ref="registrationForm" @bind-IsValid="@success" @bind-Errors="@errors" Model="@registerModel" Validation="@Validation" ReadOnly="false">
+                                <MudTextField T="string"
+                                        @bind-Value="registerModel.Email" 
+                                        Label="Email" 
+                                        Required="true" 
+                                        For="@(() => registerModel.Email)"
+                                        Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is an invalid format"})"/>
+                                
+                                    <MudTextField 
+                                        @bind-Value="registerModel.Password" 
+                                        Label="Password" 
+                                        Required="true"
+                                        RequiredError="Password is required!"
+                                        For="@(() => registerModel.Password)" 
+                                        T="string" 
+                                        InputType="InputType.Password"/>
+                                
+                                    <MudTextField 
+                                        @bind-Value="registerModel.ConfirmPassword" 
+                                        Label="Confirm Password" 
+                                        Required="true"
+                                        RequiredError="Password is required!"
+                                        For="@(() => registerModel.ConfirmPassword)" 
+                                        T="string" 
+                                        InputType="InputType.Password"/>
 
-</MudTabs>
+                                <div class="d-flex align-center justify-space-between">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@RegisterUser">Register</MudButton>
+                                </div>
+                            </MudForm>
+                        </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+            }
+
+        </MudTabs>
+    </NotAuthorized>
+    <Authorized>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@LogoutClicked">Logout</MudButton>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     private LoginModel loginModel = new LoginModel();
@@ -69,7 +114,7 @@
     bool success;
     string[] errors = { };
     MudTextField<string> pwField1;
-    MudForm form;
+    private MudForm loginForm;
 
     private MudForm registrationForm;
 
@@ -139,7 +184,13 @@
             }
         }
     }
-    
+
+    private async Task LogoutClicked()
+    {
+        await JsRuntime.InvokeVoidAsync("logout");
+        _navigationManager.NavigateTo("/login", true);
+    }
+
     public class EmailConfirmationModel
     {
         public string UserName { get; set; }
