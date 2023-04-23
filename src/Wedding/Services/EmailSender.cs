@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Net.Mail;
 using System.Net;
+using DocumentFormat.OpenXml.Spreadsheet;
+using SendGrid.Helpers.Mail;
+using SendGrid;
 
 namespace Wedding.Services
 {
     public class EmailSender : IEmailSender
     {
-        private readonly SmtpClient _client;
+        private readonly SendGridClient _client;
         private readonly ILogger<EmailSender> _logger;
         private readonly string _emailAddressSender;
 
@@ -22,29 +25,18 @@ namespace Wedding.Services
 
             _emailAddressSender = configuration.GetValue<string>("EmailAddressSender");
 
-            // Initialize the smtp client with the given parameters
-            _client = new SmtpClient(host)
-            {
-                Port = port,
-                EnableSsl = enableSsl,
-                Credentials = new NetworkCredential(userName, password)
-            };
+            _client = new SendGridClient(password);
         }
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            // Create a new mail message with the given parameters
-            var message = new MailMessage
-            {
-                From = new MailAddress(_emailAddressSender),
-                To = { new MailAddress(toEmail) },
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
 
-            // Send the message asynchronously using the smtp client
-            await _client.SendMailAsync(message);
+            var from = new EmailAddress(_emailAddressSender, "Wedding Site");
+            var to = new EmailAddress(toEmail);
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, null, body);
+            var result = await _client.SendEmailAsync(msg);
+
+            _logger.LogInformation(result.ToString());
         }
     }
 }

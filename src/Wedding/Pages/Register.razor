@@ -7,6 +7,7 @@
 @using Wedding.Models
 @using Wedding.Templates.Emails
 @using BlazorTemplater;
+@using Microsoft.AspNetCore.Identity.UI.Services
 @using Severity = MudBlazor.Severity
 
 @inject IServiceProvider _ServiceProvider
@@ -96,7 +97,7 @@
         if (await _signInManager.CanSignInAsync(usr))
         {
             var result = await _signInManager.CheckPasswordSignInAsync(usr, password, true);
-            if (result == Microsoft.AspNetCore.Identity.SignInResult.Success)
+            if (result == SignInResult.Success)
             {
                 Guid key = Guid.NewGuid();
                 BlazorCookieLoginMiddleware.Logins[key] = new LoginInfo { Email = Email, Password = password };
@@ -127,11 +128,10 @@
                 var emailBody = new ComponentRenderer<RegistrationEmailTemplate>().Set(
                     x => x.ConfirmationLink, confirmationLink.ToString()).Render();
 
-                var emailSender = _ServiceProvider.GetService<EmailSender>();
+                var emailSender = _ServiceProvider.GetService<IEmailSender>();
                 await emailSender.SendEmailAsync(user.Email, "New account registration", emailBody);
 
-                await _signInManager.SignInAsync(user, false);
-                _navigationManager.NavigateTo("/");
+                Snackbar.Add("Please check your emails to confirm your email address", Severity.Success);
             }
             else
             {
