@@ -1,0 +1,137 @@
+﻿@using MudBlazor
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" Model="@guest">
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="First Name" @bind-Value="@guest.FirstName" For="@(() => guest.FirstName)" Required="true"/>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)" Required="true"/>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect Label="Age Bracket" @bind-Value="@guest.AgeBracket" For="@(() => guest.AgeBracket)" Required="true">
+                    @foreach (var ageBracket in Enum.GetValues<AgeBracket>())
+                    {
+                        <MudSelectItem Value="@ageBracket">@ageBracket</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudCheckBox Label="Is Attending" @bind-Checked="@guest.IsAttending"/>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudAutocomplete Label="Party" @bind-Value="@guest.Party.PartyName" SearchFunc="@SearchPartiesAsync" OnValueChanged="@OnPartyChanged">
+                    <ItemTemplate Context="party">
+                        @party.PartyName
+                    </ItemTemplate>
+                </MudAutocomplete>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateParty">Create Party</MudButton>
+            </MudItem>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Cancel">Cancel</MudButton>
+        <MudButton OnClick="@Save" Disabled="@(!form.IsValid)">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string Title { get; set; }
+
+    [Parameter] public Guest guest { get; set; }
+
+    private MudForm form;
+
+    protected override void OnInitialized()
+    {
+        // Initialize the guest object if it is null
+        if (guest == null)
+        {
+            guest = new Guest()
+            {
+                GuestId = Guid.NewGuid(),
+                Party = new Party()
+                {
+                    PartyId = Guid.NewGuid(),
+                    UniqueInviteId = Guid.NewGuid().ToString()
+                }
+            };
+        }
+    }
+
+    private void Cancel()
+    {
+        // Close the dialog without returning any data
+        MudDialog.Cancel();
+    }
+
+    private void Save()
+    {
+        // Close the dialog and return the guest object
+        MudDialog.Close(DialogResult.Ok(guest));
+    }
+
+    private async Task<IEnumerable<Party>> SearchPartiesAsync(string value)
+    {
+        // Search for existing parties by name
+        // This is just a mock implementation, you need to replace it with your own logic
+        guest.Party.
+        return parties.GetPartiesByPartyName;
+    }
+
+    private void OnPartyChanged(string value)
+    {
+        // Update the party id and unique invite id based on the selected party name
+        // This is just a mock implementation, you need to replace it with your own logic
+        var party = new List<Party>()
+        {
+            new Party()
+            {
+                PartyId = Guid.NewGuid(),
+                PartyName = "Smith Family",
+                UniqueInviteId = "smith123"
+            },
+            new Party()
+            {
+                PartyId = Guid.NewGuid(),
+                PartyName = "Jones Family",
+                UniqueInviteId = "jones456"
+            },
+            new Party()
+            {
+                PartyId = Guid.NewGuid(),
+                PartyName = "Brown Family",
+                UniqueInviteId = "brown789"
+            }
+        }.FirstOrDefault(p => p.PartyName == value);
+        if (party != null)
+        {
+            guest.PartyId = party.PartyId;
+            guest.Party.UniqueInviteId = party.UniqueInviteId;
+        }
+    }
+
+    private async Task CreateParty()
+    {
+        // Show a dialog for creating a new party
+        var parameters = new DialogParameters();
+        parameters.Add("Title", "Create Party");
+        var dialog = DialogService.Show<AddPartyDialog>("Create Party", parameters);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            // Get the new party from the dialog and update the guest object
+            var newParty = (Party)result.Data;
+            guest.PartyId = newParty.PartyId;
+            guest.Party.PartyName = newParty.PartyName;
+            guest.Party.UniqueInviteId = newParty.UniqueInviteId;
+            StateHasChanged();
+        }
+    }
+}

@@ -14,6 +14,12 @@ namespace Wedding.Services
             _contextFactory = contextFactory;
         }
 
+        public async Task<List<Party>> GetPartiesByPartyName(string partyName)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            var parties = await Task.FromResult(context.Party.Where(p => p.PartyName.Contains(partyName, StringComparison.OrdinalIgnoreCase)).ToList());
+            return parties;
+        }
         public async Task<List<Party>> GetAllAsync()
         {
             await using var context = await _contextFactory.CreateDbContextAsync();

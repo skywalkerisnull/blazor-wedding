@@ -1,0 +1,142 @@
+﻿@page "/guestlist"
+@using MudBlazor
+@using Wedding.Services
+@inject IServiceProvider _serviceProvider
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<h3>Guest List</h3>
+
+<MudTable Items="@guests" Hover="true" Dense="true" Filter="new Func<Guest, bool>(FilterFunc)" ServerData="@LoadData">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Guests</MudText>
+        <MudSpacer />
+        <MudTextField Label="Search" @bind-Value="@searchString" Immediate="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search"/>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddGuest">Add Guest</MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Party</MudTh>
+        <MudTh>Age Bracket</MudTh>
+        <MudTh>Is Attending</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="Party"><MudChip Text="@context.Party.PartyName"/></MudTd>
+        <MudTd DataLabel="Age Bracket">@context.AgeBracket</MudTd>
+        <MudTd DataLabel="Is Attending">@context.IsAttending</MudTd>
+        <MudTd DataLabel="Actions">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditGuest(context))"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteGuest(context))"/>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <TablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private List<Guest> guests = new List<Guest>();
+    private string searchString = "";
+    private IGuestService _guestServices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load the initial data from the database or service
+        _guestServices = _serviceProvider.GetService<IGuestService>();
+        guests = await LoadGuestsAsync();
+    }
+
+    private async Task<TableData<Guest>> LoadData(TableState state)
+    {
+        // Apply paging and sorting to the data
+        guests = await LoadGuestsAsync();
+        if (!string.IsNullOrEmpty(state.SortLabel))
+        {
+            switch (state.SortLabel)
+            {
+                case "Name":
+                    guests = state.SortDirection == SortDirection.Ascending ? guests.OrderBy(p => p.FirstName).ToList() : guests.OrderByDescending(p => p.FirstName).ToList();
+                    break;
+                //case "Last Name":
+                //    guests = state.SortDirection == SortDirection.Ascending ? guests.OrderBy(p => p.LastName).ToList() : guests.OrderByDescending(p => p.LastName).ToList();
+                //    break;
+            }
+        }
+        return new TableData<Guest>() { TotalItems = guests.Count, Items = guests };
+    }
+
+    private bool FilterFunc(Guest guest)
+    {
+        // Apply filtering to the data based on the search string
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (guest.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (guest.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        //if (guest.Party.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //    return true;
+        return false;
+    }
+
+    private async Task AddGuest()
+    {
+        // Show a dialog for adding a new guest
+        var parameters = new DialogParameters();
+        parameters.Add("Title", "Add Guest");
+        var dialog = DialogService.Show<GuestDialog>("Add Guest", parameters);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            // Get the new guest from the dialog and add it to the data source
+            var newGuest = (Guest)result.Data;
+            guests.Add(newGuest);
+            Snackbar.Add($"Added guest {newGuest.FirstName} {newGuest.LastName}", Severity.Success);
+            StateHasChanged();
+        }
+    }
+
+    private async Task EditGuest(Guest guest)
+    {
+        // Show a dialog for editing an existing guest
+        var parameters = new DialogParameters();
+        parameters.Add("Title", "Edit Guest");
+        parameters.Add("Guest", guest);
+        var dialog = DialogService.Show<GuestDialog>("Edit Guest", parameters);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            // Get the updated guest from the dialog and update it in the data source
+            var updatedGuest = (Guest)result.Data;
+            var index = guests.FindIndex(g => g.GuestId == updatedGuest.GuestId);
+            guests[index] = updatedGuest;
+            Snackbar.Add($"Updated guest {updatedGuest.FirstName} {updatedGuest.LastName}", Severity.Success);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteGuest(Guest guest)
+    {
+        // Show a confirmation dialog for deleting a guest
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", $"Are you sure you want to delete guest {guest.FirstName} {guest.LastName}?");
+        parameters.Add("ButtonText", "Delete");
+        parameters.Add("Color", Color.Error);
+        var dialog = DialogService.Show<DeleteConfirmationDialog>("Delete Guest", parameters);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            // Remove the guest from the data source
+            guests.Remove(guest);
+            Snackbar.Add($"Deleted guest {guest.FirstName} {guest.LastName}", Severity.Success);
+            StateHasChanged();
+        }
+    }
+
+    private async Task<List<Guest>> LoadGuestsAsync()
+    {
+        return await _guestServices.GetAllAsync();
+    }
+}

@@ -6,7 +6,7 @@ namespace Wedding.Services
     {
         //Task<List<Party>> GetPartiesAsync();
         //Task AddPartyAsync(Party party);
-
+        Task<List<Party>> GetPartiesByPartyName(string partyName);
         Task<List<Party>> GetAllAsync();
         Task<List<Party>> GetAllAsync(bool includeGuests);
         Task<Party> GetByIdAsync(Guid id);
