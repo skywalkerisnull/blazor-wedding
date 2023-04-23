@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
+    <PackageReference Include="Blazored.FluentValidation" Version="2.1.0" />
+    <PackageReference Include="BlazorTemplater" Version="1.5.1" />
     <PackageReference Include="ClosedXML" Version="0.101.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.5" />
@@ -32,6 +34,11 @@
     <Folder Include="Data\Migrations\" />
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\fonts\" />
+    <Folder Include="wwwroot\Views\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Templates\Emails\RegistrationEmailTemplate.razor" />
   </ItemGroup>
 
   <ItemGroup>

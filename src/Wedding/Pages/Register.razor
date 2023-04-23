@@ -3,10 +3,18 @@
 @using Wedding.Services
 @using Microsoft.AspNetCore.Components
 @using System.ComponentModel.DataAnnotations
+@using FluentValidation
+@using Wedding.Models
+@using Wedding.Templates.Emails
+@using BlazorTemplater;
+@using Severity = MudBlazor.Severity
+
+@inject IServiceProvider _ServiceProvider
 @inject UserManager<IdentityUser> _userManager
 @inject SignInManager<IdentityUser> _signInManager
 @inject NavigationManager _navigationManager
 @inject ISnackbar Snackbar
+@inject IConfiguration _Configuration
 
 <h2>Login or Register</h2>
 
@@ -37,30 +45,44 @@
             </MudItem>
         </MudGrid>
     </MudTabPanel>
-
-    <MudTabPanel Text="Register">
-        <MudForm Model="@registerModel" OnValidSubmit="RegisterUser">
-            <MudTextField Label="Email" @bind-Value="@registerModel.Email" For="@(() => registerModel.Email)" Required="true" />
-            <MudTextField Label="Password" @bind-Value="@registerModel.Password" For="@(() => registerModel.Password)" Required="true" InputType="InputType.Password" />
-            <MudTextField Label="Confirm Password" @bind-Value="@registerModel.ConfirmPassword" For="@(() => registerModel.ConfirmPassword)" Required="true" InputType="InputType.Password" />
-            <MudButton Type="ButtonType.Submit" Color="Color.Primary">Register</MudButton>
-        </MudForm>
-    </MudTabPanel>
+    @if (_Configuration.GetValue("AllowAccountRegistration", false)){
+        <MudTabPanel Text="Register">
+            <MudText Typo="Typo.h5">Register</MudText>
+            <MudForm @ref="registrationForm" Model="@registerModel" Validation="@Validation">
+                <MudTextField @bind-Value="registerModel.Email" Label="Email" Required="true" For="@(() => registerModel.Email)" />
+                <MudTextField @bind-Value="registerModel.Password" Label="Password" Required="true" For="@(() => registerModel.Password)" T="string" InputType="InputType.Password" />
+                <MudTextField @bind-Value="registerModel.ConfirmPassword" Label="Confirm Password" Required="true" For="@(() => registerModel.ConfirmPassword)" T="string" InputType="InputType.Password" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@RegisterUser">Register</MudButton>
+            </MudForm>
+        </MudTabPanel>
+        }
 
 </MudTabs>
 
 @code {
     private LoginModel loginModel = new LoginModel();
     private RegisterModel registerModel = new RegisterModel();
+    private IValidator? _validator;
+    private FluentValidationValidator? _fluentValidationValidator;
 
     bool success;
     string[] errors = { };
     MudTextField<string> pwField1;
     MudForm form;
 
+    private MudForm registrationForm;
+
     public string Email { get; set; }
 
     private string password;
+
+    private EditContext Validation;
+
+    protected override void OnInitialized()
+    {
+        Validation = new EditContext(registerModel);
+        Validation.AddFluentValidation(_ServiceProvider, false, _validator, _fluentValidationValidator);
+    }
 
     private async Task LoginClicked()
     {
@@ -74,7 +96,7 @@
         if (await _signInManager.CanSignInAsync(usr))
         {
             var result = await _signInManager.CheckPasswordSignInAsync(usr, password, true);
-            if (result == SignInResult.Success)
+            if (result == Microsoft.AspNetCore.Identity.SignInResult.Success)
             {
                 Guid key = Guid.NewGuid();
                 BlazorCookieLoginMiddleware.Logins[key] = new LoginInfo { Email = Email, Password = password };
@@ -93,29 +115,40 @@
 
     private async Task RegisterUser()
     {
-        var user = new IdentityUser { UserName = registerModel.Email, Email = registerModel.Email };
-        var result = await _userManager.CreateAsync(user, registerModel.Password);
-        if (result.Succeeded)
+        if (registrationForm.IsValid)
         {
-            await _signInManager.SignInAsync(user, false);
-            _navigationManager.NavigateTo("/", true);
+            var user = new IdentityUser { UserName = registerModel.Email, Email = registerModel.Email };
+            var result = await _userManager.CreateAsync(user, registerModel.Password);
+            if (result.Succeeded)
+            {
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = _navigationManager.ToAbsoluteUri($"/confirmemail?userid={user.Id}&token={token}");
+
+                var emailBody = new ComponentRenderer<RegistrationEmailTemplate>().Set(
+                    x => x.ConfirmationLink, confirmationLink.ToString()).Render();
+
+                var emailSender = _ServiceProvider.GetService<EmailSender>();
+                await emailSender.SendEmailAsync(user.Email, "New account registration", emailBody);
+
+                await _signInManager.SignInAsync(user, false);
+                _navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add("This email address is already registered", Severity.Warning);
+            }
         }
-        else
-        {
-            Snackbar.Add("This email address is already registered", Severity.Warning);
-        }
+    }
+    
+    public class EmailConfirmationModel
+    {
+        public string UserName { get; set; }
+        public string ConfirmationLink { get; set; }
     }
 
     public class LoginModel
     {
         public string Email { get; set; }
         public string Password { get; set; }
-    }
-
-    public class RegisterModel
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string ConfirmPassword { get; set; }
     }
 }

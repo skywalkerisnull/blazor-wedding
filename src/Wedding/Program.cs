@@ -6,8 +6,11 @@ using Wedding.Areas.Identity;
 using Wedding.Data;
 using Wedding.Services;
 using Wedding.Controllers;
+using Wedding.Models;
 using Radzen;
 using BlazorDownloadFile;
+using FluentValidation;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,15 +29,19 @@ builder.Services.AddControllers();
 builder.Services.AddBlazorDownloadFile(ServiceLifetime.Scoped);
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 
-builder.Services.AddTransient<EmailSender>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+builder.Services.AddTransient<IValidator<RegisterModel>, RegisterModelValidator>();
 
 builder.Services.AddScoped<IGuestService, GuestService>();
 builder.Services.AddScoped<IPartyService, PartyService>();
 builder.Services.AddScoped<ImageController>();
 
+
 builder.Services.AddScoped<DialogService>();
 
 builder.Services.AddMudServices();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
