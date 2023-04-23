@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using System.Net.Mail;
-using System.Net;
-using DocumentFormat.OpenXml.Spreadsheet;
 using SendGrid.Helpers.Mail;
 using SendGrid;
 
@@ -18,7 +15,7 @@ namespace Wedding.Services
             _logger = logger;
 
             var host = configuration.GetValue<string>("EmailHost");
-            var port = configuration.GetValue<int>("EmailPort");
+            var port = configuration.GetValue<int>("EmailPort", 587);
             var enableSsl = configuration.GetValue<bool>("EmailSslEnabled");
             var userName = configuration.GetValue<string>("EmailUserName");
             var password = configuration.GetValue<string>("EmailPassword");

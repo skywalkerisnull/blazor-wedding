@@ -48,7 +48,17 @@ else{
                                               RequiredError="Password is required!"
                                               @bind-Value="password" />
                                 <div class="d-flex align-center justify-space-between">
-                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@LoginClicked">Login</MudButton>
+                                        <MudButton Disabled="@_processing" Variant="Variant.Filled" Color="Color.Primary" OnClick="@LoginClicked" for="@context">
+                                        @if (_processing)
+                                        {
+                                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                            <MudText Class="ms-2">Logging in</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>Log in</MudText>
+                                        }
+                                    </MudButton>
                                 </div>
                             </MudForm>
                         </MudPaper>
@@ -89,7 +99,17 @@ else{
                                         InputType="InputType.Password"/>
 
                                 <div class="d-flex align-center justify-space-between">
-                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@RegisterUser">Register</MudButton>
+                                        <MudButton Disabled="@_processing" Variant="Variant.Filled" Color="Color.Primary" OnClick="@RegisterUser" for="@context">
+                                        @if (_processing)
+                                        {
+                                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                            <MudText Class="ms-2">Registering</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>Register</MudText>
+                                        }
+                                    </MudButton>
                                 </div>
                             </MudForm>
                         </MudPaper>
@@ -97,7 +117,6 @@ else{
                     </MudGrid>
                 </MudTabPanel>
             }
-
         </MudTabs>
     </NotAuthorized>
     <Authorized>
@@ -110,6 +129,8 @@ else{
     private RegisterModel registerModel = new RegisterModel();
     private IValidator? _validator;
     private FluentValidationValidator? _fluentValidationValidator;
+
+    private bool _processing = false;
 
     bool success;
     string[] errors = { };
@@ -132,6 +153,7 @@ else{
 
     private async Task LoginClicked()
     {
+        _processing = true;
         var usr = await _userManager.FindByEmailAsync(Email);
         if (usr == null)
         {
@@ -157,10 +179,12 @@ else{
         {
             Snackbar.Add("Your account is blocked", Severity.Warning);
         }
+        _processing = false;
     }
 
     private async Task RegisterUser()
     {
+        _processing = true;
         if (registrationForm.IsValid)
         {
             var user = new IdentityUser { UserName = registerModel.Email, Email = registerModel.Email };
@@ -183,6 +207,7 @@ else{
                 Snackbar.Add("This email address is already registered", Severity.Warning);
             }
         }
+        _processing = false;
     }
 
     private async Task LogoutClicked()
