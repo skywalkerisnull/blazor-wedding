@@ -1,19 +1,41 @@
 ﻿@page "/register"
 @using Microsoft.AspNetCore.Identity
-@using MudBlazor
+@using Wedding.Services
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
 @inject UserManager<IdentityUser> _userManager
 @inject SignInManager<IdentityUser> _signInManager
 @inject NavigationManager _navigationManager
+@inject ISnackbar Snackbar
 
 <h2>Login or Register</h2>
-<MudAlert Severity="Severity.Error" Variant="Variant.Filled" Visible="@loginErrorVisible">@loginErrorMessage</MudAlert>
+
 <MudTabs>
     <MudTabPanel Text="Login">
-        <MudForm Model="@loginModel" OnValidSubmit="LoginUser">
-            <MudTextField Label="Email" @bind-Value="@loginModel.Email" For="@(() => loginModel.Email)" Required="true" />
-            <MudTextField Label="Password" @bind-Value="@loginModel.Password" For="@(() => loginModel.Password)" Required="true" InputType="InputType.Password" />
-            <MudButton Type="ButtonType.Submit" Color="Color.Primary">Login</MudButton>
-        </MudForm>
+        <h3>Login</h3>
+        <MudGrid>
+            <MudItem xs="12" sm="7">
+                <MudPaper Class="pa-4">
+                    <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
+                        <MudTextField T="string" 
+                                      Label="Email" 
+                                      Required="true" 
+                                      RequiredError="Email is required!"
+                                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is an invalid format"})" @bind-Value="Email" />
+                        <MudTextField T="string" 
+                                      Label="Password" 
+                                      HelperText="Password"
+                                      InputType="InputType.Password" 
+                                      Required="true" 
+                                      RequiredError="Password is required!" 
+                                      @bind-Value="password"/>
+                        <div class="d-flex align-center justify-space-between">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@LoginClicked">Login</MudButton>
+                        </div>
+                    </MudForm>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
     </MudTabPanel>
     <MudTabPanel Text="Register">
         <MudForm Model="@registerModel" OnValidSubmit="RegisterUser">
@@ -28,21 +50,55 @@
 @code {
     private LoginModel loginModel = new LoginModel();
     private RegisterModel registerModel = new RegisterModel();
-    private bool loginErrorVisible = false;
-    private string loginErrorMessage = "";
+
+    bool success;
+    string[] errors = { };
+    MudTextField<string> pwField1;
+    MudForm form;
+
+    public string Email { get; set; }
+
+    private string password;
 
     private async Task LoginUser()
     {
         var result = await _signInManager.PasswordSignInAsync(loginModel.Email, loginModel.Password, false, false);
         if (result.Succeeded)
         {
-            loginErrorVisible = false;
             _navigationManager.NavigateTo("/", true);
         }
         else
         {
-            loginErrorVisible = true;
-            loginErrorMessage = "Invalid email or password";
+            Snackbar.Add("Invalid email or password", Severity.Error);
+        }
+    }
+
+    private async Task LoginClicked()
+    {
+        var usr = await _userManager.FindByEmailAsync(Email);
+        if (usr == null)
+        {
+            Snackbar.Add("User not found or password incorrect", Severity.Error);
+            return;
+        }
+
+        if (await _signInManager.CanSignInAsync(usr))
+        {
+            var result = await _signInManager.CheckPasswordSignInAsync(usr, password, true);
+            if (result == SignInResult.Success)
+            {
+                Guid key = Guid.NewGuid();
+                BlazorCookieLoginMiddleware.Logins[key] = new LoginInfo { Email = Email, Password = password };
+                _navigationManager.NavigateTo($"/login?key={key}", true);
+            }
+            else
+            {
+                Snackbar.Add("User not found or password incorrect", Severity.Error);
+            }
+        }
+        else
+        {
+            Snackbar.Add("Your account is blocked", Severity.Warning);
         }
     }
 
