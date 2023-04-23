@@ -1,4 +1,4 @@
-﻿@page "/register"
+﻿@page "/login"
 @using Microsoft.AspNetCore.Identity
 @using Wedding.Services
 @using Microsoft.AspNetCore.Components
@@ -37,6 +37,7 @@
             </MudItem>
         </MudGrid>
     </MudTabPanel>
+
     <MudTabPanel Text="Register">
         <MudForm Model="@registerModel" OnValidSubmit="RegisterUser">
             <MudTextField Label="Email" @bind-Value="@registerModel.Email" For="@(() => registerModel.Email)" Required="true" />
@@ -45,6 +46,7 @@
             <MudButton Type="ButtonType.Submit" Color="Color.Primary">Register</MudButton>
         </MudForm>
     </MudTabPanel>
+
 </MudTabs>
 
 @code {
@@ -59,19 +61,6 @@
     public string Email { get; set; }
 
     private string password;
-
-    private async Task LoginUser()
-    {
-        var result = await _signInManager.PasswordSignInAsync(loginModel.Email, loginModel.Password, false, false);
-        if (result.Succeeded)
-        {
-            _navigationManager.NavigateTo("/", true);
-        }
-        else
-        {
-            Snackbar.Add("Invalid email or password", Severity.Error);
-        }
-    }
 
     private async Task LoginClicked()
     {
@@ -113,7 +102,7 @@
         }
         else
         {
-            // show error message
+            Snackbar.Add("This email address is already registered", Severity.Warning);
         }
     }
 

@@ -26,6 +26,8 @@ builder.Services.AddControllers();
 builder.Services.AddBlazorDownloadFile(ServiceLifetime.Scoped);
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 
+builder.Services.AddTransient<EmailSender>();
+
 builder.Services.AddScoped<IGuestService, GuestService>();
 builder.Services.AddScoped<IPartyService, PartyService>();
 builder.Services.AddScoped<ImageController>();
