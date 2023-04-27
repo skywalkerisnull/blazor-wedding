@@ -13,9 +13,11 @@
 <MudTable 
     Items="@guests" 
     Hover="true" 
-    Dense="true" 
-    Filter="new Func<Guest, bool>(FilterFunc)" 
-        ServerData="@LoadData">
+          @ref="table"
+          SortLabel="Sort By"
+          Filter="new Func<Guest, bool>(FilterFunc)"
+          @bind-SelectedItem="selectedItem"
+          ServerData="@(new Func<TableState, Task<TableData<Guest>>>(ServerReload))">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Guests</MudText>
         <MudSpacer />
@@ -23,16 +25,26 @@
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddGuest">Add Guest</MudButton>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh>Name</MudTh>
-        <MudTh>Party</MudTh>
-        <MudTh>Age Bracket</MudTh>
-        <MudTh>Is Attending</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="name" SortBy="@((Guest p) => p.LastName)" ThenBy="@((Guest p) => p.FirstName)" InitialDirection="SortDirection.Ascending">
+                Name
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="party" SortBy="@((Guest p) => p.Party)">
+                Party
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="is_attending" SortBy="@((Guest p) => p.IsAttending)">
+                Is Attending
+            </MudTableSortLabel>
+        </MudTh>
         <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.FirstName @context.LastName</MudTd>
         <MudTd DataLabel="Party"><MudChip Text="@context.Party.PartyName"/></MudTd>
-        <MudTd DataLabel="Age Bracket">@context.AgeBracket</MudTd>
         <MudTd DataLabel="Is Attending">@context.IsAttending</MudTd>
         <MudTd DataLabel="Actions">
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditGuest(context))"/>
@@ -47,19 +59,50 @@
 @code {
     private List<Guest> guests = new List<Guest>();
     private string searchString = "";
+    private IEnumerable<Guest> pagedData;
+    private MudTable<Guest> table;
+    private Guest selectedItem = null;
+    private int totalItems;
 
     protected override async Task OnInitializedAsync()
     {
         // Load the initial data from the guest service
-        guests = await GuestService.GetAllAsync();
+        guests = await GuestService.GetAllAsync(true);
     }
 
-    private async Task<TableData<Guest>> LoadData(TableState state)
+    private async Task<TableData<Guest>> ServerReload(TableState state)
     {
-        // Apply paging and sorting to the data
-        //var orderedData = guests.OrderByDirection<Guest, string>(state.SortDirection, state.SortLabel).AsQueryable();
-        guests = await GuestService.GetAllAsync();
-        return new TableData<Guest>() { TotalItems = guests.Count(), Items = guests };
+        IEnumerable<Guest> data = await GuestService.GetAllAsync(true);
+        await Task.Delay(300);
+        data = data.Where(element =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (element.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }).ToArray();
+
+        totalItems = data.Count();
+
+        switch (state.SortLabel)
+        {
+            case "name":
+                data = data.OrderByDirection(state.SortDirection, o => o.LastName).OrderByDirection(state.SortDirection, o=>o.FirstName);
+                break;
+            case "party":
+                data = data.OrderByDirection(state.SortDirection, o => o.Party);
+                break;
+            case "is_attending":
+                data = data.OrderByDirection(state.SortDirection, o => o.IsAttending);
+                break;
+        }
+
+        pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        return new TableData<Guest>() { TotalItems = totalItems, Items = pagedData };
+
     }
 
     private bool FilterFunc(Guest guest)
