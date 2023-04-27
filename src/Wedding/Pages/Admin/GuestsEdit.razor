@@ -82,6 +82,8 @@
                 return true;
             if (element.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
+            if (element.Party.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
             return false;
         }).ToArray();
 
@@ -93,7 +95,7 @@
                 data = data.OrderByDirection(state.SortDirection, o => o.LastName).OrderByDirection(state.SortDirection, o=>o.FirstName);
                 break;
             case "party":
-                data = data.OrderByDirection(state.SortDirection, o => o.Party);
+                data = data.OrderByDirection(state.SortDirection, o => o.Party.PartyName);
                 break;
             case "is_attending":
                 data = data.OrderByDirection(state.SortDirection, o => o.IsAttending);
@@ -102,7 +104,6 @@
 
         pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
         return new TableData<Guest>() { TotalItems = totalItems, Items = pagedData };
-
     }
 
     private bool FilterFunc(Guest guest)
