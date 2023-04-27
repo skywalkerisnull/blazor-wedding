@@ -8,8 +8,50 @@
 @inject IPartyService PartyService
 @inject IGuestService GuestService
 
+@inject IJSRuntime _js
+@inject NavigationManager _navigation
+@inject IPartyService _partyService
+@inject ApplicationDbContext _context
+
 <h3>Guest List</h3>
 
+<AuthorizeView>
+    <Authorized>
+<MudGrid Justify="Justify.FlexEnd">
+
+    <MudItem xs="6">
+        <MudFileUpload T="IBrowserFile" FilesChanged="UploadGuests" Accept=".xlsx">
+            <ButtonTemplate Context="buttonContext">
+                <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" for="@buttonContext">
+                    @if (IsUploading)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Uploading</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Upload Guests</MudText>
+                    }
+                </MudButton>
+            </ButtonTemplate>
+        </MudFileUpload>
+    </MudItem>
+
+    <MudItem xs="6">
+        <MudButton Disabled="@IsDownloading" OnClick="DownloadGuests" Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudDownload">
+            @if (IsDownloading)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Downloading</MudText>
+            }
+            else
+            {
+                <MudText>Download Guests</MudText>
+            }
+        </MudButton>
+    </MudItem>
+
+</MudGrid>
 <MudTable 
     Items="@guests" 
     Hover="true" 
@@ -61,9 +103,13 @@
         <MudTablePager />
     </PagerContent>
 </MudTable>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     private List<Guest> guests = new List<Guest>();
+    private bool IsDownloading = false;
+    private bool IsUploading = false;
     private string searchString = "";
     private IEnumerable<Guest> pagedData;
     private MudTable<Guest> table;
@@ -177,5 +223,37 @@
             Snackbar.Add($"Deleted guest {guest.FirstName} {guest.LastName}", Severity.Success);
             StateHasChanged();
         }
+    }
+
+    private async Task UploadGuests(IBrowserFile file)
+    {
+        IsUploading = true;
+
+        var tempFileName = "./temp.xlsx";
+
+        using (var stream = File.Create(tempFileName))
+        {
+            await file.OpenReadStream().CopyToAsync(stream);
+        }
+
+        List<Party> parties = new();
+        parties.FromExcelFile(tempFileName);
+        _context.Party.UpdateRange(parties);
+        IsUploading = false;
+    }
+
+    private async Task DownloadGuests()
+    {
+        IsDownloading = true;
+        var guests = await GuestService.GetAllAsync(true);
+
+        var now = DateTime.UtcNow.ToString("yyyyMMddTHHmmss");
+
+        guests.ToExcelFile($"./guests-{now}.xlsx");
+        var fileStream = File.OpenRead($"./guests-{now}.xlsx");
+        var fileName = $"guests-{now}.xlsx";
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+        await _js.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+        IsDownloading = false;
     }
 }
