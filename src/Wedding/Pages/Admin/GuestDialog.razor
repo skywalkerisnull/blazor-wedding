@@ -1,5 +1,7 @@
 ﻿@using MudBlazor
+@using Wedding.Services
 @inject IDialogService DialogService
+@inject IPartyService _partyService
 
 <MudDialog>
     <DialogContent>
@@ -22,7 +24,7 @@
                 <MudCheckBox Label="Is Attending" @bind-Checked="@guest.IsAttending"/>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudAutocomplete Label="Party" @bind-Value="@guest.Party.PartyName" SearchFunc="@SearchPartiesAsync" OnValueChanged="@OnPartyChanged">
+                <MudAutocomplete Label="Party" @bind-Value="@guest.Party" SearchFunc="@SearchPartiesAsync" OnValueChanged="@OnPartyChanged">
                     <ItemTemplate Context="party">
                         @party.PartyName
                     </ItemTemplate>
@@ -48,8 +50,10 @@
 
     private MudForm form;
 
+
     protected override void OnInitialized()
     {
+
         // Initialize the guest object if it is null
         if (guest == null)
         {
@@ -79,10 +83,7 @@
 
     private async Task<IEnumerable<Party>> SearchPartiesAsync(string value)
     {
-        // Search for existing parties by name
-        // This is just a mock implementation, you need to replace it with your own logic
-        guest.Party.
-        return parties.GetPartiesByPartyName;
+        return await _partyService.GetPartiesByPartyName(value);
     }
 
     private void OnPartyChanged(string value)

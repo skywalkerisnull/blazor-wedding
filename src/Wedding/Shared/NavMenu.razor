@@ -48,12 +48,18 @@
                 </li>
 
                 <AuthorizeView>
-                <Authorized> 
+                <Authorized>
                     <li class="nav-item">
                         <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/parties"))">
                             <span aria-hidden="true"></span> Edit Parties
                         </NavLink>
                     </li>
+
+                        <li class="nav-item">
+                            <NavLink class="nav-link text-dark" href="" @onclick="@(() => NavigationManager.NavigateTo("/guests"))">
+                                <span aria-hidden="true"></span> Edit Guests
+                            </NavLink>
+                        </li>
                     
                     <li class="nav-item">
                         <NavLink class="nav-link text-dark" href="" 

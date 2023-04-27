@@ -1,13 +1,21 @@
-﻿@page "/guestlist"
+﻿@page "/guests"
 @using MudBlazor
 @using Wedding.Services
 @inject IServiceProvider _serviceProvider
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+@inject IPartyService PartyService
+@inject IGuestService GuestService
+
 <h3>Guest List</h3>
 
-<MudTable Items="@guests" Hover="true" Dense="true" Filter="new Func<Guest, bool>(FilterFunc)" ServerData="@LoadData">
+<MudTable 
+    Items="@guests" 
+    Hover="true" 
+    Dense="true" 
+    Filter="new Func<Guest, bool>(FilterFunc)" 
+        ServerData="@LoadData">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Guests</MudText>
         <MudSpacer />
@@ -39,32 +47,19 @@
 @code {
     private List<Guest> guests = new List<Guest>();
     private string searchString = "";
-    private IGuestService _guestServices;
 
     protected override async Task OnInitializedAsync()
     {
-        // Load the initial data from the database or service
-        _guestServices = _serviceProvider.GetService<IGuestService>();
-        guests = await LoadGuestsAsync();
+        // Load the initial data from the guest service
+        guests = await GuestService.GetAllAsync();
     }
 
     private async Task<TableData<Guest>> LoadData(TableState state)
     {
         // Apply paging and sorting to the data
-        guests = await LoadGuestsAsync();
-        if (!string.IsNullOrEmpty(state.SortLabel))
-        {
-            switch (state.SortLabel)
-            {
-                case "Name":
-                    guests = state.SortDirection == SortDirection.Ascending ? guests.OrderBy(p => p.FirstName).ToList() : guests.OrderByDescending(p => p.FirstName).ToList();
-                    break;
-                //case "Last Name":
-                //    guests = state.SortDirection == SortDirection.Ascending ? guests.OrderBy(p => p.LastName).ToList() : guests.OrderByDescending(p => p.LastName).ToList();
-                //    break;
-            }
-        }
-        return new TableData<Guest>() { TotalItems = guests.Count, Items = guests };
+        //var orderedData = guests.OrderByDirection<Guest, string>(state.SortDirection, state.SortLabel).AsQueryable();
+        guests = await GuestService.GetAllAsync();
+        return new TableData<Guest>() { TotalItems = guests.Count(), Items = guests };
     }
 
     private bool FilterFunc(Guest guest)
@@ -76,8 +71,8 @@
             return true;
         if (guest.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        //if (guest.Party.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-        //    return true;
+        if (guest.Party.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
         return false;
     }
 
@@ -90,9 +85,9 @@
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
-            // Get the new guest from the dialog and add it to the data source
+            // Get the new guest from the dialog and add it to the guest service
             var newGuest = (Guest)result.Data;
-            guests.Add(newGuest);
+            await GuestService.AddAsync(newGuest);
             Snackbar.Add($"Added guest {newGuest.FirstName} {newGuest.LastName}", Severity.Success);
             StateHasChanged();
         }
@@ -108,10 +103,9 @@
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
-            // Get the updated guest from the dialog and update it in the data source
+            // Get the updated guest from the dialog and update it in the guest service
             var updatedGuest = (Guest)result.Data;
-            var index = guests.FindIndex(g => g.GuestId == updatedGuest.GuestId);
-            guests[index] = updatedGuest;
+            await GuestService.UpdateAsync(updatedGuest);
             Snackbar.Add($"Updated guest {updatedGuest.FirstName} {updatedGuest.LastName}", Severity.Success);
             StateHasChanged();
         }
@@ -128,15 +122,10 @@
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
-            // Remove the guest from the data source
-            guests.Remove(guest);
+            // Remove the guest from the guest service
+            await GuestService.DeleteAsync(guest);
             Snackbar.Add($"Deleted guest {guest.FirstName} {guest.LastName}", Severity.Success);
             StateHasChanged();
         }
-    }
-
-    private async Task<List<Guest>> LoadGuestsAsync()
-    {
-        return await _guestServices.GetAllAsync();
     }
 }

@@ -46,8 +46,14 @@
 
         </MudGrid>
 
-        <MudTable Items="@parties" Hover="true" @ref="table" SortLabel="Sort By" Filter="new Func<Party,bool>(FilterFunc)"
-                  @bind-SelectedItem="selectedItem1" ServerData="@(new Func<TableState, Task<TableData<Party>>>(ServerReload))">
+        <MudTable 
+            Items="@parties" 
+            Hover="true" 
+            @ref="table" 
+            SortLabel="Sort By" 
+            Filter="new Func<Party,bool>(FilterFunc)"
+                  @bind-SelectedItem="selectedItem1" 
+                  ServerData="@(new Func<TableState, Task<TableData<Party>>>(ServerReload))">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Parties</MudText>
                 <MudSpacer />
