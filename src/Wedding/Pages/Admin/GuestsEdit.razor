@@ -42,17 +42,23 @@
         </MudTh>
         <MudTh>Actions</MudTh>
     </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Name">@context.FirstName @context.LastName</MudTd>
-        <MudTd DataLabel="Party"><MudChip Text="@context.Party.PartyName"/></MudTd>
-        <MudTd DataLabel="Is Attending">@context.IsAttending</MudTd>
+    <RowTemplate Context="guest">
+        <MudTd DataLabel="Name">@guest.FirstName @guest.LastName</MudTd>
+        <MudTd DataLabel="Party"><MudChip Text="@guest.Party.PartyName" /></MudTd>
+        <MudTd DataLabel="Is Attending">@guest.IsAttending</MudTd>
         <MudTd DataLabel="Actions">
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditGuest(context))"/>
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteGuest(context))"/>
-        </MudTd>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditGuest(guest))">Edit</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteGuest(guest))">Delete</MudButton>
+            </MudTd>
     </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No Party or Guest records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
     <PagerContent>
-        <TablePager />
+        <MudTablePager />
     </PagerContent>
 </MudTable>
 
@@ -143,7 +149,7 @@
         var parameters = new DialogParameters();
         parameters.Add("Title", "Edit Guest");
         parameters.Add("Guest", guest);
-        var dialog = DialogService.Show<GuestDialog>("Edit Guest", parameters);
+        var dialog = DialogService.Show<GuestForm>("Edit Guest", parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
