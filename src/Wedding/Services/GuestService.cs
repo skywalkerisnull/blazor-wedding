@@ -21,6 +21,11 @@ namespace Wedding.Services
             await using var context = await _contextFactory.CreateDbContextAsync();
             return await context.Guests.ToListAsync();
         }
+        public async Task<List<Guest>> GetAllAsync(bool includeParties = true)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Guests.Include(x =>x.Party).ToListAsync();
+        }
 
         public async Task<Guest> GetByIdAsync(Guid id)
         {
