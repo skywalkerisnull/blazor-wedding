@@ -93,7 +93,8 @@ namespace Wedding.Controllers
             {
                 if (Array.IndexOf(_imageMimetypes, mimeType) >= 0 && (Array.IndexOf(_imageExt, extension) >= 0))
                 {
-                    using (var stream = new FileStream(Path.Combine(_environment.WebRootPath, "images", fileName), FileMode.Create))
+                    var filePath = Path.Combine(_environment.WebRootPath, "images", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         file.CopyTo(stream);
                         var url = Url.Content($"~/images/{fileName}");
@@ -114,7 +115,7 @@ namespace Wedding.Controllers
                             FileHash = hash,
                             DateTimeUploadedUtc = DateTime.UtcNow,
                             FileName = fileName,
-                            FilePath = "",
+                            FilePath = filePath,
                             FileUrl = new Uri(url),
                         };
 
