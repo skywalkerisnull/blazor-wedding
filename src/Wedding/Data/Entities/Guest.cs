@@ -19,6 +19,7 @@ namespace Wedding.Data.Entities
         public List<CommonDietaryRequirements> CommonRequirements { get; set; } = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None};
         public string? Allergies { get; set; }
         public string? Other { get; set; }
+        public Picture? Picture { get; set; }
         public Guid PartyId { get; set; }
 
         [ForeignKey("PartyId")]
