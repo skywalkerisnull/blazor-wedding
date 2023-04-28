@@ -1,8 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections;
 using System.Formats.Tar;
+using System.IO.Packaging;
+using System.Security.Cryptography;
+using System.Security.Policy;
+using Wedding.Data;
+using Wedding.Data.Entities;
 
 namespace Wedding.Controllers
 {
@@ -14,11 +21,16 @@ namespace Wedding.Controllers
     public class ImageController : Controller
     {
         private readonly IWebHostEnvironment _environment;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
         private static string[] _imageMimetypes = {"image/gif", "image/jpeg", "image/pjpeg", "image/x-png", "image/png", "image/svg+xml"};
         private static string[] _imageExt = { ".gif", ".jpeg", ".jpg", ".png", ".svg", ".blob" };
-        public ImageController(IWebHostEnvironment environment)
+        public ImageController(IWebHostEnvironment environment, IServiceProvider serviceProvider, IDbContextFactory<ApplicationDbContext> dbContextFactory)
         {
             _environment = environment;
+            _serviceProvider = serviceProvider;
+            _contextFactory = dbContextFactory;
         }
 
         [HttpPost("upload/multiple")]
@@ -26,31 +38,56 @@ namespace Wedding.Controllers
         public async Task<IActionResult> Post(IFormFile[] files)
         {
             Hashtable location = new Hashtable();
-
+            await using var context = await _contextFactory.CreateDbContextAsync();
             foreach (var file in files)
             {
                 var result = SaveFile(file);
                 location.Add("location", result.ToString());
+
+                byte[] hash;
+                using (var md5 = MD5.Create())
+                {
+                    using (var streamReader = new StreamReader(file.OpenReadStream()))
+                    {
+                        hash = md5.ComputeHash(streamReader.BaseStream);
+                    }
+                }
+
+                var picture = new Picture()
+                {
+                    PictureId = Guid.NewGuid(),
+                    OriginalFileName = file.FileName,
+                    FileHash = hash,
+                    DateTimeUploadedUtc = DateTime.UtcNow,
+                    FileName = file.FileName,
+                    FilePath = "",
+                    FileUrl = new Uri(""),
+                };
+
+                context.Pictures.Add(picture);
             }
+            await context.SaveChangesAsync();
             return Json(location);
         }
 
         [Authorize]
         [HttpPost("upload")]
-        public IActionResult Image(IFormFile file)
+        public async Task<IActionResult> Image(IFormFile file)
         {
-            return SaveFile(file);
+            return await SaveFile(file);
         }
 
-        private IActionResult SaveFile(IFormFile file)
+        private async Task<IActionResult> SaveFile(IFormFile file)
         {
-            // TODO: create an entry in the DB to allow for easy/quick tracking of the images that have been uploaded.
             var mimeType = file.ContentType;
             var extension = Path.GetExtension(file.FileName);
             var fileName = $"{Guid.NewGuid()}{extension}";
             
             FileInfo dir = new FileInfo(Path.Combine(_environment.WebRootPath, "images"));
             dir.Directory.Create();
+
+            // TODO: refactor this so that the DB aspect is in a seperate method.
+            await using var context = await _contextFactory.CreateDbContextAsync();
 
             try
             {
@@ -60,6 +97,29 @@ namespace Wedding.Controllers
                     {
                         file.CopyTo(stream);
                         var url = Url.Content($"~/images/{fileName}");
+
+                        byte[] hash;
+                        using (var md5 = MD5.Create())
+                        {
+                            using (var streamReader = new StreamReader(file.OpenReadStream()))
+                            {
+                                hash = md5.ComputeHash(streamReader.BaseStream);
+                            }
+                        }
+
+                        var picture = new Picture()
+                        {
+                            PictureId = Guid.NewGuid(),
+                            OriginalFileName = file.FileName,
+                            FileHash = hash,
+                            DateTimeUploadedUtc = DateTime.UtcNow,
+                            FileName = fileName,
+                            FilePath = "",
+                            FileUrl = new Uri(url),
+                        };
+
+                        context.Pictures.Add(picture);
+                        await context.SaveChangesAsync();
                         return Ok(new { Url = url });
                     }
                 }
