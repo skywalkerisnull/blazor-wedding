@@ -1,0 +1,61 @@
+﻿@page "/confirmemail"
+@using Microsoft.AspNetCore.Identity 
+
+@inject IConfiguration _configuration
+@inject UserManager<IdentityUser> _userManager 
+@inject NavigationManager _navigationManager
+
+<h3>Confirm your email address</h3>
+
+@if (_confirmed) { 
+    <p>Thank you for confirming your email address.</p> 
+} 
+else if (_error) { 
+    <p>Sorry, something went wrong. Please try again later.</p> 
+} 
+else { 
+    <p>Please wait while we confirm your email address…</p> 
+}
+
+@code {
+    private bool _confirmed = false;
+    private bool _error = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_configuration.GetValue("AllowAccountRegistration", false))
+        {
+            var userId = _navigationManager.GetUriWithQueryParameter("userid", true);
+            var token = _navigationManager.GetUriWithQueryParameter("token", true);
+
+            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(token))
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    var result = await _userManager.ConfirmEmailAsync(user, token);
+                    if (result.Succeeded)
+                    {
+                        _confirmed = true;
+                    }
+                    else
+                    {
+                        _error = true;
+                    }
+                }
+                else
+                {
+                    _error = true;
+                }
+            }
+            else
+            {
+                _error = true;
+            }
+        }
+        else
+        {
+            _error = true;
+        }
+    }
+}
