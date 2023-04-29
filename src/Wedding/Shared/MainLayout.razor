@@ -16,24 +16,41 @@
             text-align: center;
         }
 
-        .wrapper > * {
-            padding: 10px;
-            flex: 1 100%;
-        }
+            .wrapper > * {
+                padding: 10px;
+                flex: 1 100%;
+            }
 
         @@media all and (min-width: 600px) {
-          /* We tell both sidebars to share a row */
-          .aside { flex: 1 auto; }
+            /* We tell both sidebars to share a row */
+            .aside {
+                flex: 1 auto;
+            }
         }
+
         @@media all and (min-width: 800px) {
-          /* We invert order of first sidebar and main
-           * And tell the main element to take twice as much width as the other two sidebars 
-           */
-          .main { flex: 3 0px; }
-          .aside-1 { order: 1; }
-          .main    { order: 2; }
-          .aside-2 { order: 3; }
-          .footer  { order: 4; }
+            /* We invert order of first sidebar and main
+                   * And tell the main element to take twice as much width as the other two sidebars
+                   */
+            .main {
+                flex: 3 0px;
+            }
+
+            .aside-1 {
+                order: 1;
+            }
+
+            .main {
+                order: 2;
+            }
+
+            .aside-2 {
+                order: 3;
+            }
+
+            .footer {
+                order: 4;
+            }
         }
 
         body {
@@ -47,14 +64,19 @@
             {
                 slug = RouteData.RouteValues["Slug"]?.ToString();
             }
-            @Body </div>
-    </div> 
-    <div class="aside aside-1"> </div> 
-    <div class="aside aside-2"> </div> 
+            @Body
+        </div>
+
+        <div class="footer">
+            <Footer />
+        </div>
+    </div>
+    <div class="aside aside-1"> </div>
+    <div class="aside aside-2"> </div>
 </div>
 
 <MudThemeProvider Theme="_weddingTheme" />
-<MudDialogProvider /> 
+<MudDialogProvider />
 <MudSnackbarProvider />
 <RadzenDialog />
 
@@ -77,6 +99,10 @@
             {
                 FontFamily = new[] { "Josefin Sans" },
             }
+        },
+        Palette = new PaletteLight()
+        {
+            PrimaryContrastText = Colors.Grey.Darken1
         }
     };
 }
