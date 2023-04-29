@@ -239,9 +239,9 @@
             await file.OpenReadStream().CopyToAsync(stream);
         }
 
-        List<Party> parties = new();
-        parties.FromExcelFile(tempFileName);
-        _context.Party.UpdateRange(parties);
+        List<Guest> guests = new();
+        guests.FromExcelFile(tempFileName);
+        _context.Guests.UpdateRange(guests);
         IsUploading = false;
     }
 

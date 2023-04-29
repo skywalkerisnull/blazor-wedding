@@ -1,5 +1,4 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Wedding.Data.Entities;
 
 namespace Wedding.Services
@@ -9,336 +8,69 @@ namespace Wedding.Services
     /// </summary>
     public static class ImportPartiesAndGuests
     {
-        //public static bool FromExcelFile(this List<Party> parties, string filename)
-        //{
-        //    bool Success = false;
-        //    //try
-        //    //{
-        //    using (var workbook = new XLWorkbook(filename))
-        //    {
-        //        var worksheet = workbook.Worksheet("Parties");
-        //        //Read the column names
-        //        var columns = new Dictionary<int, string>();
-        //        foreach (var cell in worksheet.Row(1).CellsUsed())
-        //        {
-        //            columns.Add(cell.Address.ColumnNumber, cell.Value.ToString());
-        //        }
+        public static bool FromExcelFile(this List<Guest> guests, string fileName)
+        {
+            try
+            {
+                // Open the excel file
+                var workbook = new XLWorkbook(fileName);
 
-        //        //Read the data
-        //        foreach (var row in worksheet.RowsUsed().Skip(1))
-        //        {
-        //            var party = new Party();
-        //            foreach (var cell in row.CellsUsed())
-        //            {
-        //                var columnName = columns[cell.Address.ColumnNumber];
-        //                var property = party.GetType().GetProperty(columnName);
-        //                if (property != null)
-        //                {
-        //                    property.SetValue(party, Convert.ChangeType(cell.Value, property.PropertyType));
-        //                }
-        //            }
+                // Access the worksheet
+                var worksheet = workbook.Worksheet("Sheet1");
 
-        //            //Check if the party exists in the list
-        //            var existingParty = parties.FirstOrDefault(p => p.PartyId == party.PartyId);
-        //            if (existingParty != null)
-        //            {
-        //                //Update the existing party
-        //                existingParty.PartyName = party.PartyName;
-        //                existingParty.Address = party.Address;
-        //                existingParty.Comments = party.Comments;
-        //                existingParty.IsInvited = party.IsInvited;
-        //                existingParty.InvitationOpened = party.InvitationOpened;
-        //                existingParty.InvitationSent = party.InvitationSent;
-        //                existingParty.UniqueInviteId = party.UniqueInviteId;
-        //                existingParty.InviteSentDate = party.InviteSentDate;
-        //            }
-        //            else
-        //            {
-        //                //Add a new party
-        //                parties.Add(party);
-        //            }
-        //        }
+                // Create a dictionary to store the header names and addresses
+                var headers = new Dictionary<string, string>();
+                foreach (var cell in worksheet.Row(1).CellsUsed())
+                {
+                    headers.Add(cell.GetValue<string>(), cell.Address.ToString());
+                }
 
-        //        Success = true;
-        //    }
-        //    //}
-        //    //catch
-        //    //{
-        //    //    //Handle exception
-        //    //}
-        //    return Success;
-        //}
+                // Loop through the rows
+                foreach (var row in worksheet.RowsUsed())
+                {
+                    // Skip the header row
+                    if (row.RowNumber() == 1)
+                        continue;
 
-        //public static bool FromExcelFile(this List<Guest> guests, string filename)
-        //{
-        //    bool Success = false;
-        //    //try
-        //    //{
-        //    using (var workbook = new XLWorkbook(filename))
-        //    {
-        //        var worksheet = workbook.Worksheet("Guests");
-        //        //Read the column names
-        //        var columns = new Dictionary<int, string>();
-        //        foreach (var cell in worksheet.Row(1).CellsUsed())
-        //        {
-        //            columns.Add(cell.Address.ColumnNumber, cell.Value.ToString());
-        //        }
+                    // Create a new entity instance
+                    var guest = new Guest();
 
-        //        //Read the data
-        //        foreach (var row in worksheet.RowsUsed().Skip(1))
-        //        {
-        //            var guest = new Guest();
-        //            foreach (var cell in row.CellsUsed())
-        //            {
-        //                var columnName = columns[cell.Address.ColumnNumber];
-        //                var property = guest.GetType().GetProperty(columnName);
-        //                if (property != null)
-        //                {
-        //                    property.SetValue(guest, Convert.ChangeType(cell.Value, property.PropertyType));
-        //                }
-        //            }
+                    // Assign the values from the cells to the properties using the header names
+                    // Check if the GuestId cell value is null or not a valid Guid and generate a new Guid if it is
+                    var guestIdCell = row.Cell(headers["GuestId"]);
+                    if (guestIdCell.Value.IsBlank || !Guid.TryParse(guestIdCell.GetValue<string>(), out Guid guestId))
+                    {
+                        guestId = Guid.NewGuid();
+                    }
+                    guest.GuestId = guestId;
+                    guest.FirstName = row.Cell(headers["FirstName"]).GetValue<string>();
+                    guest.LastName = row.Cell(headers["LastName"]).GetValue<string>();
+                    guest.IsAttending = row.Cell(headers["IsAttending"]).GetValue<bool?>();
+                    guest.IsAttendingRehersalDinner = row.Cell(headers["IsAttendingRehersalDinner"]).GetValue<bool?>();
+                    guest.InviteAccepted = row.Cell(headers["InviteAccepted"]).GetValue<DateTime?>();
+                    guest.AgeBracket = (AgeBracket)row.Cell(headers["AgeBracket"]).GetValue<int>();
+                    guest.CommonRequirements = ParseCommonRequirements(row.Cell(headers["CommonRequirements"]).GetValue<string>());
+                    guest.Allergies = row.Cell(headers["Allergies"]).GetValue<string>();
+                    guest.Other = row.Cell(headers["Other"]).GetValue<string>();
+                    guest.PartyId = Guid.Parse(row.Cell(headers["PartyId"]).GetValue<string>());
 
-        //            //Check if the guest exists in the list
-        //            var existingGuest = guests.FirstOrDefault(g => g.GuestId == guest.GuestId);
-        //            if (existingGuest != null)
-        //            {
-        //                //Update the existing guest
-        //                existingGuest.FirstName = guest.FirstName;
-        //                existingGuest.LastName = guest.LastName;
-        //                existingGuest.IsAttending = guest.IsAttending;
-        //                existingGuest.IsAttendingRehersalDinner = guest.IsAttendingRehersalDinner;
-        //                existingGuest.InviteAccepted = guest.InviteAccepted;
-        //                existingGuest.InvitationOpened = guest.InvitationOpened;
-        //                existingGuest.AgeBracket = guest.AgeBracket;
-        //                existingGuest.CommonRequirements = guest.CommonRequirements;
-        //                existingGuest.Allergies = guest.Allergies;
-        //                existingGuest.Other = guest.Other;
-        //                existingGuest.PartyId = guest.PartyId;
-        //            }
-        //            else
-        //            {
-        //                //Add a new guest
-        //                guests.Add(guest);
-        //            }
-        //        }
+                    // Add the entity to the list
+                    guests.Add(guest);
+                }
 
-        //        Success = true;
-        //    }
-        //    //}
-        //    //catch
-        //    //{
-        //    //    //Handle exception
-        //    //}
-        //    return Success;
-        //}
+                // Return true if no exception occurred
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Handle or log the exception as needed
+                Console.WriteLine(ex.Message);
 
-        //public static bool FromExcelFile(this List<Party> parties, string filename, bool partyAndGuests)
-        //{
-        //    bool Success = false;
-        //    //try
-        //    //{
-        //    using (var workbook = new XLWorkbook(filename))
-        //    {
-        //        //Import parties from the first worksheet
-        //        var worksheet1 = workbook.Worksheet("Parties");
-        //        //Read the column names
-        //        var columns1 = new Dictionary<int, string>();
-        //        foreach (var cell in worksheet1.Row(1).CellsUsed())
-        //        {
-        //            columns1.Add(cell.Address.ColumnNumber, cell.Value.ToString());
-        //        }
+                // Return false if an exception occurred
+                return false;
+            }
+        }
 
-        //        //Read the data
-        //        foreach (var row in worksheet1.RowsUsed().Skip(1))
-        //        {
-        //            var party = new Party();
-        //            foreach (var cell in row.CellsUsed())
-        //            {
-        //                var columnName = columns1[cell.Address.ColumnNumber];
-        //                var property = party.GetType().GetProperty(columnName);
-        //                if (property != null)
-        //                {
-        //                    property.SetValue(party, Convert.ChangeType(cell.Value, property.PropertyType));
-        //                }
-        //            }
-
-        //            //Check if the party exists in the list
-        //            var existingParty = parties.FirstOrDefault(p => p.PartyId == party.PartyId);
-        //            if (existingParty != null)
-        //            {
-        //                //Update the existing party
-        //                existingParty.PartyName = party.PartyName;
-        //                existingParty.Address = party.Address;
-        //                existingParty.Comments = party.Comments;
-        //                existingParty.IsInvited = party.IsInvited;
-        //                existingParty.InvitationOpened = party.InvitationOpened;
-        //                existingParty.InvitationSent = party.InvitationSent;
-        //                existingParty.UniqueInviteId = party.UniqueInviteId;
-        //                existingParty.InviteSentDate = party.InviteSentDate;
-        //            }
-        //            else
-        //            {
-        //                //Add a new party
-        //                parties.Add(party);
-        //            }
-        //        }
-
-        //        //Import guests from the second worksheet
-        //        var worksheet2 = workbook.Worksheet("Guests");
-        //        //Read the column names
-        //        var columns2 = new Dictionary<int, string>();
-        //        foreach (var cell in worksheet2.Row(1).CellsUsed())
-        //        {
-        //            columns2.Add(cell.Address.ColumnNumber, cell.Value.ToString());
-        //        }
-
-        //        //Read the data
-        //        foreach (var row in worksheet2.RowsUsed().Skip(1))
-        //        {
-        //            var guest = new Guest();
-        //            foreach (var cell in row.CellsUsed())
-        //            {
-        //                var columnName = columns2[cell.Address.ColumnNumber];
-        //                var property = guest.GetType().GetProperty(columnName);
-        //                if (property != null)
-        //                {
-        //                    property.SetValue(guest, Convert.ChangeType(cell.Value, property.PropertyType));
-        //                }
-        //            }
-
-        //            //Check if the guest exists in the list
-        //            var existingGuest = parties.SelectMany(p => p.Guests).FirstOrDefault(g => g.GuestId == guest.GuestId);
-        //            if (existingGuest != null)
-        //            {
-        //                //Update the existing guest
-        //                existingGuest.FirstName = guest.FirstName;
-        //                existingGuest.LastName = guest.LastName;
-        //                existingGuest.IsAttending = guest.IsAttending;
-        //                existingGuest.IsAttendingRehersalDinner = guest.IsAttendingRehersalDinner;
-        //                existingGuest.InviteAccepted = guest.InviteAccepted;
-        //                existingGuest.InvitationOpened = guest.InvitationOpened;
-        //                existingGuest.AgeBracket = guest.AgeBracket;
-        //                existingGuest.CommonRequirements = guest.CommonRequirements;
-        //                existingGuest.Allergies = guest.Allergies;
-        //                existingGuest.Other = guest.Other;
-        //                existingGuest.PartyId = guest.PartyId;
-        //            }
-        //            else
-        //            {
-        //                //Add a new guest to the corresponding party
-        //                var party = parties.FirstOrDefault(p => p.PartyId == guest.PartyId);
-        //                if (party != null)
-        //                {
-        //                    party.Guests.Add(guest);
-        //                }
-        //            }
-        //        }
-
-        //        Success = true;
-        //    }
-        //    //}
-        //    //catch
-        //    //{
-        //    //    //Handle exception
-        //    //}
-        //    return Success;
-        //}
-
-        //public static bool FromExcelFile(this List<Party> parties, string filename, char thisOne)
-        //{
-        //    bool Success = false;
-        //    try
-        //    {
-        //        using (var workbook = new XLWorkbook(filename))
-        //    {
-        //        //Import parties and guests from the first worksheet
-        //        var worksheet = workbook.Worksheet("Parties and Guests");
-        //        //Read the column names
-        //        var columns = new Dictionary<int, string>();
-        //        foreach (var cell in worksheet.Row(1).CellsUsed())
-        //        {
-        //            columns.Add(cell.Address.ColumnNumber, cell.Value.ToString());
-        //        }
-
-        //        //Read the data
-        //        foreach (var row in worksheet.RowsUsed().Skip(1))
-        //        {
-        //            var party = new Party();
-        //            var guest = new Guest();
-
-        //            foreach (var cell in row.CellsUsed())
-        //            {
-        //                var columnName = columns[cell.Address.ColumnNumber];
-        //                var partyProperty = party.GetType().GetProperty(columnName);
-        //                if (partyProperty != null)
-        //                {
-        //                    partyProperty.SetValue(party, Guid.Parse(cell.Value.ToString()));
-        //                }
-
-        //                var guestProperty = guest.GetType().GetProperty(columnName);
-        //                if (guestProperty != null)
-        //                {
-        //                    guestProperty.SetValue(guest, Guid.Parse(cell.Value.ToString()));
-        //                }
-        //            }
-
-        //            //Check if the party exists in the list
-        //            var existingParty = parties.FirstOrDefault(p => p.PartyId == party.PartyId);
-        //            if (existingParty != null)
-        //            {
-        //                //Update the existing party
-        //                existingParty.PartyName = party.PartyName;
-        //                existingParty.Address = party.Address;
-        //                existingParty.Comments = party.Comments;
-        //                existingParty.IsInvited = party.IsInvited;
-        //                existingParty.InvitationOpened = party.InvitationOpened;
-        //                existingParty.InvitationSent = party.InvitationSent;
-        //                existingParty.UniqueInviteId = party.UniqueInviteId;
-        //                existingParty.InviteSentDate = party.InviteSentDate;
-        //            }
-        //            else
-        //            {
-        //                //Add a new party
-        //                parties.Add(party);
-        //            }
-
-        //            //Check if the guest exists in the list
-        //            var existingGuest = parties.SelectMany(p => p.Guests).FirstOrDefault(g => g.GuestId == guest.GuestId);
-        //            if (existingGuest != null)
-        //            {
-        //                //Update the existing guest
-        //                existingGuest.FirstName = guest.FirstName;
-        //                existingGuest.LastName = guest.LastName;
-        //                existingGuest.IsAttending = guest.IsAttending;
-        //                existingGuest.IsAttendingRehersalDinner = guest.IsAttendingRehersalDinner;
-        //                existingGuest.InviteAccepted = guest.InviteAccepted;
-        //                existingGuest.InvitationOpened = guest.InvitationOpened;
-        //                existingGuest.AgeBracket = guest.AgeBracket;
-        //                existingGuest.CommonRequirements = guest.CommonRequirements;
-        //                existingGuest.Allergies = guest.Allergies;
-        //                existingGuest.Other = guest.Other;
-        //                existingGuest.PartyId = guest.PartyId;
-        //            }
-        //            else
-        //            {
-        //                //Add a new guest to the corresponding party
-        //                var party_ = parties.FirstOrDefault(p => p.PartyId == guest.PartyId);
-        //                if (party_ != null)
-        //                {
-        //                    party_.Guests.Add(guest);
-        //                }
-        //            }
-        //        }
-
-        //        Success = true;
-        //    }
-        //    }
-        //    catch (Exception ex) 
-        //    { 
-        //        Success = false; 
-        //    }
-        //    return Success;
-        //}
         public static bool FromExcelFile(this List<Party> parties, string filePath)
         {
             // Create a dictionary to store the guests by party id
