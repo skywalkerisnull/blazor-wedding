@@ -33,7 +33,7 @@
                     <MudItem Required="true" xs="12">
                         <MudSelect
                             T="CommonDietaryRequirements"
-                            Label="Common Requirements"
+                            Label="Dietary Requirements"
                             MultiSelectionTextFunc="DietaryMultiSelection"
                             MultiSelection
                             @bind-SelectedValues="options">
@@ -43,19 +43,25 @@
                             }
                         </MudSelect>
                     </MudItem>
-                    <MudItem xs="12">
-                        <MudTextField Label="Allergies" @bind-Value="@guest.Allergies" For="@(() => guest.Allergies)"/>
+                    @if (options.Contains(CommonDietaryRequirements.Other))
+                    {
+                        <MudItem xs="12">
+                            <MudTextField Label="Other Allergies" @bind-Value="@guest.Allergies" For="@(() => guest.Allergies)"/>
                     </MudItem>
+                    }
+                    @if (options.Contains(CommonDietaryRequirements.Other))
+                    {
                     <MudItem xs="12">
-                        <MudTextField Label="Other" @bind-Value="@guest.Other" For="@(() => guest.Other)"/>
+                        <MudTextField Label="Other Requirements" @bind-Value="@guest.Other" For="@(() => guest.Other)"/>
                     </MudItem>
-                    @*<MudItem xs="12">
+                    }
+                    <MudItem xs="12">
                 <MudSelect Label="Party" @bind-Value="@guest.PartyId">
-                    @foreach (var party in parties)
+                    @foreach (var party in Parties)
                     {
                         <MudSelectItem Value="@party.PartyId">@party.PartyName</MudSelectItem>
                     }
-                </MudSelect> </MudItem>*@
+                </MudSelect> </MudItem>
                 </MudGrid>
             </DialogContent>
             <DialogActions>
@@ -72,13 +78,13 @@
     [Parameter] public string Title { get; set; }
 
     [Parameter] public Guest Guest { get; set; }
+    [Parameter] public List<Party> Parties { get; set; }
 
     private Guest guest = new Guest()
     {
         CommonRequirements = new List<CommonDietaryRequirements>(),
         AgeBracket = AgeBracket.EighteenPlus,
     };
-    private List<Party> parties;
 
     private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
     private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
@@ -99,11 +105,11 @@
         }
         try
         {
-            parties = await partyService.GetAllAsync();
+            Parties = await partyService.GetAllAsync();
         }
         catch
         {
-            Console.WriteLine(parties.ToString());
+            Console.WriteLine(Parties.ToString());
         }
     }
 

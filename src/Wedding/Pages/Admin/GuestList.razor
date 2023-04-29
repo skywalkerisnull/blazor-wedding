@@ -70,7 +70,10 @@
 
     private async Task EditGuest(Guest guest)
     {
-        var dialog = dialogService.Show<GuestForm>("Edit Guest", new DialogParameters { ["Guest"] = guest });
+        var parameters = new DialogParameters();
+        parameters.Add("Guest", guest);
+        parameters.Add("Parties", await partyService.GetAllAsync());
+        var dialog = dialogService.Show<GuestForm>("Edit Guest", parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
