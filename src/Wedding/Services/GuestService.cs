@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MudBlazor;
-using System.Linq;
 using Wedding.Data;
 using Wedding.Data.Entities;
 using Wedding.Models;
@@ -51,6 +50,35 @@ namespace Wedding.Services
             await using var context = await _contextFactory.CreateDbContextAsync();
             context.Guests.Update(guest);
             await context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(IList<Guest> guests)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            foreach (var guest in guests)
+            {
+                Guest? guestDb = await context.Guests.FindAsync(guest.GuestId);
+                if (guestDb is null)
+                {
+                    await context.Guests.AddAsync(guest);
+                }
+                else
+                {
+                    guestDb.FirstName = guest.FirstName;
+                    guestDb.LastName = guest.LastName;
+                    guestDb.Party = guest.Party;
+                    guestDb.AgeBracket = guest.AgeBracket;
+                    guestDb.InviteAccepted = guest.InviteAccepted;
+                    guestDb.IsAttending = guest.IsAttending;
+                    guestDb.IsAttendingRehersalDinner = guest.IsAttendingRehersalDinner;
+                    guestDb.Allergies = guest.Allergies;
+                    guestDb.CommonRequirements = guest.CommonRequirements;
+                    guestDb.Other = guest.Other;
+                    
+                    context.Guests.Update(guestDb);
+                }
+                await context.SaveChangesAsync();
+            }
         }
 
         public async Task DeleteAsync(Guest guest)

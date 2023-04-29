@@ -88,7 +88,7 @@
     </HeaderContent>
     <RowTemplate Context="guest">
         <MudTd DataLabel="Name">@guest.FirstName @guest.LastName</MudTd>
-        <MudTd DataLabel="Party"><MudChip Text="@guest.Party.PartyName" /></MudTd>
+        <MudTd DataLabel="Party"><MudChip Text="@guest.Party?.PartyName" /></MudTd>
         <MudTd DataLabel="Is Attending">@guest.IsAttending</MudTd>
         <MudTd DataLabel="Actions">
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditGuest(guest))">Edit</MudButton>
@@ -149,7 +149,9 @@
                 data = data.OrderByDirection(state.SortDirection, o => o.LastName).OrderByDirection(state.SortDirection, o=>o.FirstName);
                 break;
             case "party":
-                data = data.OrderByDirection(state.SortDirection, o => o.Party.PartyName);
+                data = data.OrderByDirection(
+                    state.SortDirection, 
+                    o => o.Party?.PartyName?? "");
                 break;
             case "is_attending":
                 data = data.OrderByDirection(state.SortDirection, o => o.IsAttending);
@@ -241,8 +243,10 @@
 
         List<Guest> guests = new();
         guests.FromExcelFile(tempFileName);
-        _context.Guests.UpdateRange(guests);
+        await GuestService.UpdateAsync(guests);
         IsUploading = false;
+        this.guests = guests;
+        StateHasChanged();
     }
 
     private async Task DownloadGuests()

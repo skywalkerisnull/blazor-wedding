@@ -20,10 +20,10 @@ namespace Wedding.Data.Entities
         public string? Allergies { get; set; }
         public string? Other { get; set; }
         public Picture? Picture { get; set; }
-        public Guid PartyId { get; set; }
+        public Guid? PartyId { get; set; }
 
         [ForeignKey("PartyId")]
-        public Party Party { get; set; }
+        public Party? Party { get; set; }
     }
 
     public enum CommonDietaryRequirements

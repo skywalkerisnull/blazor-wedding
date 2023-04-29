@@ -18,6 +18,7 @@ namespace Wedding.Services
         Task<List<Guest>> GetByPartyIdAsync(Guid partyId);
         Task AddAsync(Guest guest);
         Task UpdateAsync(Guest guest);
+        Task UpdateAsync(IList<Guest> guests);
         Task DeleteAsync(Guest guest);
     }
 }

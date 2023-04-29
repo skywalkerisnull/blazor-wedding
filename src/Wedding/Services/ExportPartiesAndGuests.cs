@@ -60,7 +60,7 @@ namespace Wedding.Services
             bool Success = false;
             //try
             //{
-            using (var workbook = new XLWorkbook(filename))
+            using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Guests");
                 //Write the column names
@@ -95,7 +95,7 @@ namespace Wedding.Services
                 }
 
                 //Save the file
-                workbook.Save();
+                workbook.SaveAs(filename);
                 Success = true;
             }
             //}

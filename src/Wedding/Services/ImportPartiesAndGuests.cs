@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using System.Data;
 using Wedding.Data.Entities;
 
 namespace Wedding.Services
@@ -16,7 +17,20 @@ namespace Wedding.Services
                 var workbook = new XLWorkbook(fileName);
 
                 // Access the worksheet
-                var worksheet = workbook.Worksheet("Sheet1");
+                var worksheet = workbook.Worksheet("Guests");
+                var headerRow = worksheet.FirstRowUsed();
+
+                var guestIdIndex = headerRow.Cells().First(c => c.Value.ToString() == "GuestId").Address.ColumnNumber;
+                var firstNameIndex = headerRow.Cells().First(c => c.Value.ToString() == "FirstName").Address.ColumnNumber;
+                var lastNameIndex = headerRow.Cells().First(c => c.Value.ToString() == "LastName").Address.ColumnNumber;
+                var isAttendingIndex = headerRow.Cells().First(c => c.Value.ToString() == "IsAttending").Address.ColumnNumber;
+                var isAttendingRehersalDinnerIndex = headerRow.Cells().First(c => c.Value.ToString() == "IsAttendingRehersalDinner").Address.ColumnNumber;
+                var inviteAcceptedIndex = headerRow.Cells().First(c => c.Value.ToString() == "InviteAccepted").Address.ColumnNumber;
+                var ageBracketIndex = headerRow.Cells().First(c => c.Value.ToString() == "AgeBracket").Address.ColumnNumber;
+                var commonRequirementsIndex = headerRow.Cells().First(c => c.Value.ToString() == "CommonRequirements").Address.ColumnNumber;
+                var allergiesIndex = headerRow.Cells().First(c => c.Value.ToString() == "Allergies").Address.ColumnNumber;
+                var otherIndex = headerRow.Cells().First(c => c.Value.ToString() == "Other").Address.ColumnNumber;
+                var partyIndex = headerRow.Cells().First(c => c.Value.ToString() == "PartyId").Address.ColumnNumber;
 
                 // Create a dictionary to store the header names and addresses
                 var headers = new Dictionary<string, string>();
@@ -26,10 +40,10 @@ namespace Wedding.Services
                 }
 
                 // Loop through the rows
-                foreach (var row in worksheet.RowsUsed())
+                foreach (var dataRow in worksheet.RowsUsed())
                 {
                     // Skip the header row
-                    if (row.RowNumber() == 1)
+                    if (dataRow.RowNumber() == 1)
                         continue;
 
                     // Create a new entity instance
@@ -37,27 +51,36 @@ namespace Wedding.Services
 
                     // Assign the values from the cells to the properties using the header names
                     // Check if the GuestId cell value is null or not a valid Guid and generate a new Guid if it is
-                    var guestIdCell = row.Cell(headers["GuestId"]);
-                    if (guestIdCell.Value.IsBlank || !Guid.TryParse(guestIdCell.GetValue<string>(), out Guid guestId))
+                    var guestIdCell = dataRow.Cell(guestIdIndex).Value.ToString();
+                    if (string.IsNullOrEmpty(guestIdCell) || !Guid.TryParse(guestIdCell, out Guid guestId))
                     {
                         guestId = Guid.NewGuid();
                     }
+
+                    // Assign the values from each cell to the corresponding property for guests
                     guest.GuestId = guestId;
-                    guest.FirstName = row.Cell(headers["FirstName"]).GetValue<string>();
-                    guest.LastName = row.Cell(headers["LastName"]).GetValue<string>();
-                    guest.IsAttending = row.Cell(headers["IsAttending"]).GetValue<bool?>();
-                    guest.IsAttendingRehersalDinner = row.Cell(headers["IsAttendingRehersalDinner"]).GetValue<bool?>();
-                    guest.InviteAccepted = row.Cell(headers["InviteAccepted"]).GetValue<DateTime?>();
-                    guest.AgeBracket = (AgeBracket)row.Cell(headers["AgeBracket"]).GetValue<int>();
-                    guest.CommonRequirements = ParseCommonRequirements(row.Cell(headers["CommonRequirements"]).GetValue<string>());
-                    guest.Allergies = row.Cell(headers["Allergies"]).GetValue<string>();
-                    guest.Other = row.Cell(headers["Other"]).GetValue<string>();
-                    guest.PartyId = Guid.Parse(row.Cell(headers["PartyId"]).GetValue<string>());
+                    guest.FirstName = dataRow.Cell(firstNameIndex).Value.ToString();
+                    guest.LastName = dataRow.Cell(lastNameIndex).Value.ToString();
+                    guest.IsAttending = ParseNullableBool(dataRow.Cell(isAttendingIndex).Value.ToString());
+                    guest.IsAttendingRehersalDinner = ParseNullableBool(dataRow.Cell(isAttendingRehersalDinnerIndex).Value.ToString());
+                    guest.InviteAccepted = ParseNullableDateTime(dataRow.Cell(inviteAcceptedIndex).Value.ToString());
+                    guest.AgeBracket = (AgeBracket)Enum.Parse(typeof(AgeBracket), dataRow.Cell(ageBracketIndex).Value.ToString());
+                    guest.CommonRequirements = ParseCommonRequirements(dataRow.Cell(commonRequirementsIndex).Value.ToString());
+                    guest.Allergies = dataRow.Cell(allergiesIndex).Value.ToString();
+                    guest.Other = dataRow.Cell(otherIndex).Value.ToString();
 
-                    // Add the entity to the list
-                    guests.Add(guest);
+                    var partyIdCell = dataRow.Cell(guestIdIndex).Value.ToString();
+
+                    if (string.IsNullOrEmpty(partyIdCell) || !Guid.TryParse(partyIdCell, out Guid partyId))
+                    {
+                        guests.Add(guest);
+                    }
+                    else
+                    {
+                        guest.PartyId = Guid.Parse(partyIdCell);
+                        guests.Add(guest);
+                    }
                 }
-
                 // Return true if no exception occurred
                 return true;
             }
@@ -159,19 +182,14 @@ namespace Wedding.Services
                     guest.IsAttending = ParseNullableBool(dataRow.Cell(isAttendingIndex).Value.ToString());
                     guest.IsAttendingRehersalDinner = ParseNullableBool(dataRow.Cell(isAttendingRehersalDinnerIndex).Value.ToString());
                     guest.InviteAccepted = ParseNullableDateTime(dataRow.Cell(inviteAcceptedIndex).Value.ToString());
-
-
-                    // TODO: This is why it is breaking! The same column name is in twice.
-
                     guest.AgeBracket = (AgeBracket)Enum.Parse(typeof(AgeBracket), dataRow.Cell(ageBracketIndex).Value.ToString());
-
                     guest.CommonRequirements = ParseCommonRequirements(dataRow.Cell(commonRequirementsIndex).Value.ToString());
                     guest.Allergies = dataRow.Cell(allergiesIndex).Value.ToString();
                     guest.Other = dataRow.Cell(otherIndex).Value.ToString();
                     guest.PartyId = partyId;
 
                     // Add the guest to the list of guests for this party id
-                    guestsByPartyId[guest.PartyId].Add(guest);
+                    guestsByPartyId[guest.PartyId.Value].Add(guest);
                 }
 
                 // Loop through each party and assign the list of guests from the dictionary
@@ -208,7 +226,7 @@ namespace Wedding.Services
             }
 
             // Otherwise, parse the string as a DateTime and return it
-            return DateTime.Parse(dateTimeString);
+            return DateTime.Parse(dateTimeString).ToUniversalTime();
         }
 
         // A helper method to parse a string of common dietary requirements into a list of CommonDietaryRequirements enums
