@@ -1,5 +1,7 @@
 ﻿@using Wedding.Services
 @inject IPartyService partyService
+@inject ILogger<GuestForm> _logger
+
 <AuthorizeView>
     <Authorized>
         <MudDialog>
@@ -15,7 +17,7 @@
                         <MudTextField Required="true" Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)"/>
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending"/>
+                        <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
                         <MudSwitch Label="Rehearsal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner"/>
@@ -56,10 +58,10 @@
                     </MudItem>
                     }
                     <MudItem xs="12">
-                <MudSelect Label="Party" @bind-Value="@guest.PartyId">
+                <MudSelect T="Guid?" Label="Party" @bind-Value="@guest.PartyId">
                     @foreach (var party in Parties)
                     {
-                        <MudSelectItem Value="@party.PartyId">@party.PartyName</MudSelectItem>
+                        <MudSelectItem T="Guid?" Value="@party.PartyId">@party.PartyName</MudSelectItem>
                     }
                 </MudSelect> </MudItem>
                 </MudGrid>
@@ -92,7 +94,6 @@
     private string DietaryMultiSelection(List<string> selectedValues)
     {
         var text = string.Join(", ", selectedValues);
-        Console.WriteLine(text);
         return text;
     }
 
@@ -101,15 +102,26 @@
     {
         if (Guest != null)
         {
+            if (Guest.IsAttending is null)
+            {
+                Guest.IsAttending = true;
+            }
+            if (Guest.IsAttendingRehersalDinner is null)
+            {
+                Guest.IsAttendingRehersalDinner = false;
+            }
             guest = Guest;
         }
         try
         {
-            Parties = await partyService.GetAllAsync();
+            if (Parties.Count == 0)
+            {
+               Parties = await partyService.GetAllAsync();
+            }
         }
         catch
         {
-            Console.WriteLine(Parties.ToString());
+            _logger.LogInformation(Parties.ToString());
         }
     }
 
