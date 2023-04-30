@@ -1,17 +1,17 @@
 ﻿<MudItem xs="12" sm="6" md="4">
-    <td>"@Guest.FirstName @Guest.LastName"</td>
+    <MudSpacer></MudSpacer>
+    <td>@Guest.FirstName @Guest.LastName</td>
+    <MudSpacer></MudSpacer>
     <MudSwitch Label="Attending" @bind-Checked="@Guest.IsAttending" />
     <MudSelect T="CommonDietaryRequirements"
                Label="Dietary Requirements"
-               MultiSelectionTextFunc="@(new Func<List<string>, string>(DietaryMultiSelection))"
                MultiSelection="true" 
-               @bind-Value="@value"
                SelectedValues="@options"
                SelectedValuesChanged="OnSelectedValuesChanged">
 
         @foreach (var item in Enum.GetValues<CommonDietaryRequirements>())
         {
-            <MudSelectItem T="CommonDietaryRequirements" Value="@item">@item.ToString()</MudSelectItem>
+            <MudSelectItem T="CommonDietaryRequirements" Value="@item"/>
         }
     </MudSelect>
     @if (options.Contains(CommonDietaryRequirements.Other))
@@ -33,17 +33,12 @@
     [Parameter]
     public Guest Guest { get; set; }
 
-    private string multiSelect = "None";
-
-
-    private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
     private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
     private IEnumerable<CommonDietaryRequirements> previousOptions = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
 
     private string DietaryMultiSelection(List<string> selectedValues)
     {
         var text = string.Join(", ", selectedValues);
-        multiSelect = text;
         return text;
     }
 
@@ -54,10 +49,9 @@
         if (!previousOptions.Contains(CommonDietaryRequirements.None) && values.Contains(CommonDietaryRequirements.None))
         {
             options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
-            return;
         }
 
-        if (list.Contains(CommonDietaryRequirements.None) && list.Count > 1)
+        else if (list.Contains(CommonDietaryRequirements.None) && list.Count > 1)
         {
             list.Remove(CommonDietaryRequirements.None);
             options = list;
@@ -70,7 +64,6 @@
         {
             options = list; 
         }
-
         Guest.CommonRequirements = options.ToList();
     }
 }
