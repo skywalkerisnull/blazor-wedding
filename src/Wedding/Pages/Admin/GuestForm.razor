@@ -109,9 +109,10 @@
 
     async Task OnPartyChanged(Guid? value)
     {
-        if (value == null)
+        if (!value.HasValue)
         {
             guest.PartyId = null;
+            guest.Party = null;
         }
         else if (value == Guid.Empty)
         {
