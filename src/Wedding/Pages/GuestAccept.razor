@@ -36,12 +36,6 @@
     private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
     private IEnumerable<CommonDietaryRequirements> previousOptions = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
 
-    private string DietaryMultiSelection(List<string> selectedValues)
-    {
-        var text = string.Join(", ", selectedValues);
-        return text;
-    }
-
     private void OnSelectedValuesChanged(IEnumerable<CommonDietaryRequirements> values)
     {
         var list = values.ToList();
