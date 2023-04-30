@@ -286,6 +286,7 @@
             parties.Remove(party);
             StateHasChanged();
             await table.ReloadServerData();
+            // TODO: When deleted, also delete and clean up the QR code, and Picture entries.
         }
     }
 
