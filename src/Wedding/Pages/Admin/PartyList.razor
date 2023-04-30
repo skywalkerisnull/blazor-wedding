@@ -255,7 +255,7 @@
             await partyService.AddAsync(party);
             parties.Add(party);
             StateHasChanged();
-            table.ReloadServerData();
+            await table.ReloadServerData();
         }
     }
 
@@ -270,7 +270,7 @@
             var index = parties.IndexOf(party);
             parties[index] = updatedParty;
             StateHasChanged();
-            table.ReloadServerData();
+            await table.ReloadServerData();
         }
     }
 
@@ -285,6 +285,7 @@
             await partyService.DeleteAsync(party);
             parties.Remove(party);
             StateHasChanged();
+            await table.ReloadServerData();
         }
     }
 
