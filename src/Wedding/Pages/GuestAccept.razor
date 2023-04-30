@@ -2,7 +2,19 @@
     <MudSpacer></MudSpacer>
     <td>@Guest.FirstName @Guest.LastName</td>
     <MudSpacer></MudSpacer>
-    <MudSwitch Label="Attending" @bind-Checked="@Guest.IsAttending" />
+    <MudSwitch @bind-Checked="@Guest.IsAttending" Color="Color.Success">
+    <ChildContent>
+        @if (Guest.IsAttending ?? false)
+        {
+                <span>@isAttending</span>
+        }
+        else
+        {
+                <span>@isNotAttending</span>
+        }
+    </ChildContent>
+    </MudSwitch>
+
     <MudSelect T="CommonDietaryRequirements"
                Label="Dietary Requirements"
                MultiSelection="true" 
@@ -32,6 +44,9 @@
 @code {
     [Parameter]
     public Guest Guest { get; set; }
+
+    private const string isAttending = "Yes, Attending";
+    private const string isNotAttending = "No, not Attending";
 
     private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
     private IEnumerable<CommonDietaryRequirements> previousOptions = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };

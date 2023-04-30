@@ -22,6 +22,7 @@ else
         <MudText Variant="Variant.H5">Dear @party.PartyName,</MudText>
         <MudText Variant="Variant.Body1">You are cordially invited to the wedding of Hayley & Ashley</MudText>
         <MudText Variant="Variant.Body1">So that we know that you are coming, please fill in the details below and click on the Accept button to confirm your attendance.</MudText>
+        <br />
         <MudForm Model="@party">
             <MudGrid Spacing="8">
                 @foreach (var guest in party.Guests)
@@ -34,10 +35,11 @@ else
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AcceptInviteMethod">Accept</MudButton>
             </div>
         </MudForm>
-
+        <br />
+        <br />
         <MudText Variant="Variant.Body1">For your convenience, here is a calendar invite with all the details that you need.</MudText>
-
-        <div style="text-align:center">
+        <br />
+        <MudGrid Class="d-flex justify-center">
             <add-to-calendar-button name="Ashley & Hayley's Wedding"
                                     startDate="2024-01-06"
                                     startTime="15:00"
@@ -51,7 +53,7 @@ else
                                     buttonStyle="date"
                                     trigger="click">
             </add-to-calendar-button>
-        </div>
+        </MudGrid>
     </MudPaper>
 }
 
