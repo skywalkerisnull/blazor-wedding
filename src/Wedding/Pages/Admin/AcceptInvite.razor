@@ -75,11 +75,12 @@ else
 
     private async Task AcceptInviteMethod()
     {
+        var now = DateTime.UtcNow;
         foreach (var guest in party.Guests)
         {
             if (guest.IsAttending == true)
             {
-                guest.InviteAccepted = DateTime.UtcNow;
+                guest.InviteAccepted = now;
             }
             await guestService.UpdateAsync(guest);
         }

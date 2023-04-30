@@ -3,12 +3,15 @@
     <MudSwitch Label="Attending" @bind-Checked="@Guest.IsAttending" />
     <MudSelect T="CommonDietaryRequirements"
                Label="Dietary Requirements"
-               MultiSelectionTextFunc="DietaryMultiSelection"
-               MultiSelection
-               @bind-SelectedValues="options">
-        @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
+               MultiSelectionTextFunc="@(new Func<List<string>, string>(DietaryMultiSelection))"
+               MultiSelection="true" 
+               @bind-Value="@value"
+               SelectedValues="@options"
+               SelectedValuesChanged="OnSelectedValuesChanged">
+
+        @foreach (var item in Enum.GetValues<CommonDietaryRequirements>())
         {
-            <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+            <MudSelectItem T="CommonDietaryRequirements" Value="@item">@item.ToString()</MudSelectItem>
         }
     </MudSelect>
     @if (options.Contains(CommonDietaryRequirements.Other))
@@ -30,14 +33,44 @@
     [Parameter]
     public Guest Guest { get; set; }
 
+    private string multiSelect = "None";
+
+
     private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
     private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
-
+    private IEnumerable<CommonDietaryRequirements> previousOptions = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
 
     private string DietaryMultiSelection(List<string> selectedValues)
     {
         var text = string.Join(", ", selectedValues);
-        Console.WriteLine(text);
+        multiSelect = text;
         return text;
+    }
+
+    private void OnSelectedValuesChanged(IEnumerable<CommonDietaryRequirements> values)
+    {
+        var list = values.ToList();
+        previousOptions = options;
+        if (!previousOptions.Contains(CommonDietaryRequirements.None) && values.Contains(CommonDietaryRequirements.None))
+        {
+            options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+            return;
+        }
+
+        if (list.Contains(CommonDietaryRequirements.None) && list.Count > 1)
+        {
+            list.Remove(CommonDietaryRequirements.None);
+            options = list;
+        }
+        else if (list.Count == 0)
+        {
+            options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+        }
+        else
+        {
+            options = list; 
+        }
+
+        Guest.CommonRequirements = options.ToList();
     }
 }
