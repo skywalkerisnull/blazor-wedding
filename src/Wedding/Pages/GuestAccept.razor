@@ -1,0 +1,33 @@
+﻿<MudItem xs="12" sm="6" md="4">
+    <td>"@Guest.FirstName @Guest.LastName"</td>
+    <MudSwitch Label="Attending" @bind-Checked="@Guest.IsAttending" />
+    <MudSelect T="CommonDietaryRequirements"
+               Label="Dietary Requirements"
+               MultiSelectionTextFunc="DietaryMultiSelection"
+               MultiSelection
+               @bind-SelectedValues="options">
+        @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
+        {
+            <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
+        }
+    </MudSelect>
+    <MudTextField Label="Allergies" @bind-Value="@Guest.Allergies" />
+    <MudTextField Label="Other" @bind-Value="@Guest.Other" />
+</MudItem>
+
+
+@code {
+    [Parameter]
+    public Guest Guest { get; set; }
+
+    private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
+    private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+
+
+    private string DietaryMultiSelection(List<string> selectedValues)
+    {
+        var text = string.Join(", ", selectedValues);
+        Console.WriteLine(text);
+        return text;
+    }
+}

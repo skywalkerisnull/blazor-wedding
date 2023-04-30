@@ -26,30 +26,13 @@ else
             <MudGrid Spacing="8">
                 @foreach (var guest in party.Guests)
                 {
-                    <MudItem xs="12" sm="6" md="4">
-                        <td>"@guest.FirstName @guest.LastName"</td>
-                        <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending" />
-                        <MudSelect 
-                            T="CommonDietaryRequirements"
-                            Label="Common Requirements"
-                            MultiSelectionTextFunc="DietaryMultiSelection"
-                            MultiSelection
-                            @bind-SelectedValues="options">
-                            @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
-                            {
-                                <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
-                            }
-                        </MudSelect> 
-                        <MudTextField Label="Allergies" @bind-Value="@guest.Allergies" />
-                        <MudTextField Label="Other" @bind-Value="@guest.Other" />
-                    </MudItem>
+                    <GuestAccept Guest="@guest"></GuestAccept>
                 }
             </MudGrid>
             <br />
             <div style="text-align: center;">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AcceptInviteMethod">Accept</MudButton>
             </div>
-
         </MudForm>
 
         <MudText Variant="Variant.Body1">For your convenience, here is a calendar invite with all the details that you need.</MudText>
@@ -78,8 +61,6 @@ else
 
     private Party party;
 
-    private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
-    private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,13 +71,6 @@ else
             party.InvitationOpened = true;
             await partyService.UpdateAsync(party);
         }
-    }
-
-    private string DietaryMultiSelection(List<string> selectedValues)
-    {
-        var text = string.Join(", ", selectedValues);
-        Console.WriteLine(text);
-        return text;
     }
 
     private async Task AcceptInviteMethod()
