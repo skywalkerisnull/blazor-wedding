@@ -12,19 +12,19 @@
             <DialogContent>
                 <MudGrid>
                     <MudItem xs="12" sm="6">
-                        <MudTextField Required="true" Label="First Name" @bind-Value="@guest.FirstName" For="@(() => guest.FirstName)"/>
+                        <MudTextField Required="true" Label="First Name" @bind-Value="@guest.FirstName" For="@(() => guest.FirstName)" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudTextField Required="true" Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)"/>
+                        <MudTextField Required="true" Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
                         <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch Label="Rehearsal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner"/>
+                        <MudSwitch Label="Rehearsal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudDatePicker Label="Invite Accepted" @bind-Date="@guest.InviteAccepted"/>
+                        <MudDatePicker Label="Invite Accepted" @bind-Date="@guest.InviteAccepted" />
                     </MudItem>
                     <MudItem xs="12">
                         <MudSelect Required="true" Label="Age Bracket" @bind-Value="@guest.AgeBracket">
@@ -32,14 +32,14 @@
                             {
                                 <MudSelectItem Value="@ageBracket">@ageBracket</MudSelectItem>
                             }
-                        </MudSelect> </MudItem>
+                        </MudSelect>
+                    </MudItem>
                     <MudItem Required="true" xs="12">
-                        <MudSelect
-                            T="CommonDietaryRequirements"
-                            Label="Dietary Requirements"
-                            MultiSelectionTextFunc="DietaryMultiSelection"
-                            MultiSelection
-                            @bind-SelectedValues="options">
+                        <MudSelect T="CommonDietaryRequirements"
+                                   Label="Dietary Requirements"
+                                   MultiSelectionTextFunc="DietaryMultiSelection"
+                                          MultiSelection
+                                   @bind-SelectedValues="options">
                             @foreach (CommonDietaryRequirements item in Enum.GetValues<CommonDietaryRequirements>())
                             {
                                 <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
@@ -49,35 +49,35 @@
                     @if (options.Contains(CommonDietaryRequirements.Other))
                     {
                         <MudItem xs="12">
-                            <MudTextField Label="Other Allergies" @bind-Value="@guest.Allergies" For="@(() => guest.Allergies)"/>
-                    </MudItem>
+                            <MudTextField Label="Other Allergies" @bind-Value="@guest.Allergies" For="@(() => guest.Allergies)" />
+                        </MudItem>
                     }
                     @if (options.Contains(CommonDietaryRequirements.Other))
                     {
-                    <MudItem xs="12">
-                        <MudTextField Label="Other Requirements" @bind-Value="@guest.Other" For="@(() => guest.Other)"/>
-                    </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField Label="Other Requirements" @bind-Value="@guest.Other" For="@(() => guest.Other)" />
+                        </MudItem>
                     }
                     <MudItem xs="12">
-                <MudSelect T="Guid?" 
-                    Label="Party" 
-                    Value="@guest.PartyId"
+                        <MudSelect T="Guid?"
+                                   Label="Party"
+                                   Value="@guest.PartyId"
                                    ValueChanged=OnPartyChanged>
                             <MudSelectItem T="Guid?" Value="null">None</MudSelectItem>
                             <MudSelectItem T="Guid?" Value="Guid.Empty">Create new party</MudSelectItem>
-                            @foreach (var party in Parties) 
-                    { <MudSelectItem 
-                        T="Guid?" 
-                        Value="@party.PartyId">@party.PartyName</MudSelectItem> 
-                    } 
-                    </MudSelect>
+                            @foreach (var party in Parties)
+                            {
+                                <MudSelectItem T="Guid?"
+                                             Value="@party.PartyId">@party.PartyName</MudSelectItem>
+                            }
+                        </MudSelect>
 
-            @if (showPartyForm)
-            {
-                <PartyForm />
-            }
-                
-            </MudItem>
+                        @if (showPartyForm)
+                        {
+                            <PartyForm />
+                        }
+
+                    </MudItem>
                 </MudGrid>
             </DialogContent>
             <DialogActions>
