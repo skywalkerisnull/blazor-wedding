@@ -68,7 +68,7 @@
                             @foreach (var party in Parties)
                             {
                                 <MudSelectItem T="Guid?"
-                                             Value="@party.PartyId">@party.PartyName</MudSelectItem>
+                                           Value="@party.PartyId">@party.PartyName</MudSelectItem>
                             }
                         </MudSelect>
 
@@ -97,10 +97,10 @@
     [Parameter] public List<Party> Parties { get; set; }
 
     private Guest guest = new Guest()
-    {
-        CommonRequirements = new List<CommonDietaryRequirements>(),
-        AgeBracket = AgeBracket.EighteenPlus,
-    };
+        {
+            CommonRequirements = new List<CommonDietaryRequirements>(),
+            AgeBracket = AgeBracket.EighteenPlus,
+        };
 
     private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
     private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
@@ -172,7 +172,7 @@
         {
             if (Parties.Count == 0)
             {
-               Parties = await partyService.GetAllAsync();
+                Parties = await partyService.GetAllAsync();
             }
         }
         catch
