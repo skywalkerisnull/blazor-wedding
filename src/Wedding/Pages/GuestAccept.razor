@@ -11,8 +11,18 @@
             <MudSelectItem Value="@item">@item.ToString()</MudSelectItem>
         }
     </MudSelect>
-    <MudTextField Label="Allergies" @bind-Value="@Guest.Allergies" />
-    <MudTextField Label="Other" @bind-Value="@Guest.Other" />
+    @if (options.Contains(CommonDietaryRequirements.Other))
+    {
+        <MudItem xs="12">
+            <MudTextField Label="Other Allergies" @bind-Value="@Guest.Allergies" For="@(() => Guest.Allergies)" />
+        </MudItem>
+    }
+    @if (options.Contains(CommonDietaryRequirements.Other))
+    {
+        <MudItem xs="12">
+            <MudTextField Label="Other Requirements" @bind-Value="@Guest.Other" For="@(() => Guest.Other)" />
+        </MudItem>
+    }
 </MudItem>
 
 
