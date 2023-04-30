@@ -1,6 +1,7 @@
 ﻿@using Wedding.Services
 @inject IPartyService partyService
 @inject ILogger<GuestForm> _logger
+@inject IDialogService dialogService
 
 <AuthorizeView>
     <Authorized>
@@ -58,12 +59,25 @@
                     </MudItem>
                     }
                     <MudItem xs="12">
-                <MudSelect T="Guid?" Label="Party" @bind-Value="@guest.PartyId">
-                    @foreach (var party in Parties)
-                    {
-                        <MudSelectItem T="Guid?" Value="@party.PartyId">@party.PartyName</MudSelectItem>
-                    }
-                </MudSelect> </MudItem>
+                <MudSelect T="Guid?" 
+                    Label="Party" 
+                    Value="@guest.PartyId"
+                                   ValueChanged=OnPartyChanged>
+                            <MudSelectItem T="Guid?" Value="null">None</MudSelectItem>
+                            <MudSelectItem T="Guid?" Value="Guid.Empty">Create new party</MudSelectItem>
+                            @foreach (var party in Parties) 
+                    { <MudSelectItem 
+                        T="Guid?" 
+                        Value="@party.PartyId">@party.PartyName</MudSelectItem> 
+                    } 
+                    </MudSelect>
+
+            @if (showPartyForm)
+            {
+                <PartyForm />
+            }
+                
+            </MudItem>
                 </MudGrid>
             </DialogContent>
             <DialogActions>
@@ -90,6 +104,47 @@
 
     private CommonDietaryRequirements value { get; set; } = CommonDietaryRequirements.None;
     private IEnumerable<CommonDietaryRequirements> options = new List<CommonDietaryRequirements>() { CommonDietaryRequirements.None };
+    bool showPartyForm = false;
+    const string CreateNewParty = "create-new-party";
+
+    async Task OnPartyChanged(Guid? value)
+    {
+        if (value == null)
+        {
+            guest.PartyId = null;
+        }
+        else if (value == Guid.Empty)
+        {
+            showPartyForm = true;
+            guest.PartyId = await AddParty();
+        }
+        else
+        {
+            guest.PartyId = value;
+        }
+    }
+
+    void OnPartyCreated(Party party)
+    {
+        showPartyForm = false;
+        Parties.Add(party);
+        guest.PartyId = party.PartyId;
+    }
+
+    private async Task<Guid?> AddParty()
+    {
+        var dialog = dialogService.Show<PartyForm>("Add Party");
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var party = (Party)result.Data;
+            await partyService.AddAsync(party);
+            Parties.Add(party);
+            StateHasChanged();
+            return party.PartyId;
+        }
+        return null;
+    }
 
     private string DietaryMultiSelection(List<string> selectedValues)
     {
@@ -130,6 +185,7 @@
     {
         MudDialog.Close(DialogResult.Ok(guest));
         guest.CommonRequirements = options.ToList();
+
     }
 
     private void Cancel()

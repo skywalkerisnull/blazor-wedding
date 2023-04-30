@@ -63,8 +63,8 @@
     <ToolBarContent>
         <MudText Typo="Typo.h6">Guests</MudText>
         <MudSpacer />
-        <MudTextField T="string" @bind-Value="@searchString" Placeholder="Search" Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+                <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         <MudSpacer />
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddGuest">Add Guest</MudButton>
     </ToolBarContent>
@@ -136,8 +136,11 @@
                 return true;
             if (element.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (element.Party.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
+            if (element.Party is not null)
+            {
+                if (element.Party.PartyName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
             return false;
         }).ToArray();
 
@@ -160,6 +163,12 @@
 
         pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
         return new TableData<Guest>() { TotalItems = totalItems, Items = pagedData };
+    }
+
+    private void OnSearch(string text)
+    {
+        searchString = text;
+        table.ReloadServerData();
     }
 
     private bool FilterFunc(Guest guest)
@@ -190,6 +199,7 @@
             await GuestService.AddAsync(newGuest);
             Snackbar.Add($"Added guest {newGuest.FirstName} {newGuest.LastName}", Severity.Success);
             StateHasChanged();
+            await table.ReloadServerData();
         }
     }
 
@@ -209,6 +219,7 @@
             await GuestService.UpdateAsync(updatedGuest);
             Snackbar.Add($"Updated guest {updatedGuest.FirstName} {updatedGuest.LastName}", Severity.Success);
             StateHasChanged();
+            await table.ReloadServerData();
         }
     }
 
@@ -227,6 +238,7 @@
             await GuestService.DeleteAsync(guest);
             Snackbar.Add($"Deleted guest {guest.FirstName} {guest.LastName}", Severity.Success);
             StateHasChanged();
+            await table.ReloadServerData();
         }
     }
 
