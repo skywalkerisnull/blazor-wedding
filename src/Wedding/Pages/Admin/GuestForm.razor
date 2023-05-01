@@ -170,7 +170,7 @@
         }
         try
         {
-            if (Parties.Count == 0)
+            if (Parties is null || Parties.Count == 0)
             {
                 Parties = await partyService.GetAllAsync();
             }

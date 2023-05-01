@@ -1,7 +1,7 @@
 ﻿@page "/guests/{PartyId:guid}"
 @using Wedding.Services
-@inject IPartyService partyService
-@inject IGuestService guestService
+@inject IPartyService _partyService
+@inject IGuestService _guestService
 @inject IDialogService dialogService
 <AuthorizeView>
     <Authorized>
@@ -49,20 +49,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        party = await partyService.GetByIdAsync(PartyId);
-        guests = await guestService.GetByPartyIdAsync(PartyId);
+        party = await _partyService.GetByIdAsync(PartyId);
+        guests = await _guestService.GetByPartyIdAsync(PartyId);
     }
 
     private async Task AddGuest()
     {
-        var dialog = dialogService.Show<GuestForm>("Add Guest");
+        var parameters = new DialogParameters();
+        var parties = await _partyService.GetAllAsync();
+        parameters.Add("Parties", parties);
+        var dialog = dialogService.Show<GuestForm>("Add Guest", parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
             var guest = (Guest)result.Data;
             guest.GuestId = Guid.NewGuid();
             guest.PartyId = PartyId;
-            await guestService.AddAsync(guest);
+            await _guestService.AddAsync(guest);
             guests.Add(guest);
             StateHasChanged();
         }
@@ -72,13 +75,14 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("Guest", guest);
-        parameters.Add("Parties", await partyService.GetAllAsync());
+        var parties = await _partyService.GetAllAsync();
+        parameters.Add("Parties", parties);
         var dialog = dialogService.Show<GuestForm>("Edit Guest", parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
             var updatedGuest = (Guest)result.Data;
-            await guestService.UpdateAsync(updatedGuest);
+            await _guestService.UpdateAsync(updatedGuest);
             var index = guests.IndexOf(guest);
             guests[index] = updatedGuest;
             StateHasChanged();
@@ -93,7 +97,7 @@
             yesText: "Delete", cancelText: "Cancel");
         if (result == true)
         {
-            await guestService.DeleteAsync(guest);
+            await _guestService.DeleteAsync(guest);
             guests.Remove(guest);
             StateHasChanged();
         }

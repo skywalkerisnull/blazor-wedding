@@ -5,8 +5,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-@inject IPartyService PartyService
-@inject IGuestService GuestService
+@inject IGuestService _guestService
 
 @inject IJSRuntime _js
 @inject NavigationManager _navigation
@@ -121,12 +120,12 @@
     protected override async Task OnInitializedAsync()
     {
         // Load the initial data from the guest service
-        guests = await GuestService.GetAllAsync(true);
+        guests = await _guestService.GetAllAsync(true);
     }
 
     private async Task<TableData<Guest>> ServerReload(TableState state)
     {
-        IEnumerable<Guest> data = await GuestService.GetAllAsync(true);
+        IEnumerable<Guest> data = await _guestService.GetAllAsync(true);
         await Task.Delay(300);
         data = data.Where(element =>
         {
@@ -189,6 +188,8 @@
     {
         // Show a dialog for adding a new guest
         var parameters = new DialogParameters();
+        var parties = await _partyService.GetAllAsync();
+        parameters.Add("Parties", parties);
         parameters.Add("Title", "Add Guest");
         var dialog = DialogService.Show<GuestForm>("Add Guest", parameters);
         var result = await dialog.Result;
@@ -196,7 +197,7 @@
         {
             // Get the new guest from the dialog and add it to the guest service
             var newGuest = (Guest)result.Data;
-            await GuestService.AddAsync(newGuest);
+            await _guestService.AddAsync(newGuest);
             Snackbar.Add($"Added guest {newGuest.FirstName} {newGuest.LastName}", Severity.Success);
             StateHasChanged();
             await table.ReloadServerData();
@@ -209,14 +210,15 @@
         var parameters = new DialogParameters();
         parameters.Add("Title", "Edit Guest");
         parameters.Add("Guest", guest);
-        parameters.Add("Parties", await PartyService.GetAllAsync());
+        var parties = await _partyService.GetAllAsync();
+        parameters.Add("Parties", parties);
         var dialog = DialogService.Show<GuestForm>("Edit Guest", parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
             // Get the updated guest from the dialog and update it in the guest service
             var updatedGuest = (Guest)result.Data;
-            await GuestService.UpdateAsync(updatedGuest);
+            await _guestService.UpdateAsync(updatedGuest);
             Snackbar.Add($"Updated guest {updatedGuest.FirstName} {updatedGuest.LastName}", Severity.Success);
             StateHasChanged();
             await table.ReloadServerData();
@@ -235,7 +237,7 @@
         if (!result.Cancelled)
         {
             // Remove the guest from the guest service
-            await GuestService.DeleteAsync(guest);
+            await _guestService.DeleteAsync(guest);
             Snackbar.Add($"Deleted guest {guest.FirstName} {guest.LastName}", Severity.Success);
             StateHasChanged();
             await table.ReloadServerData();
@@ -255,7 +257,7 @@
 
         List<Guest> guests = new();
         guests.FromExcelFile(tempFileName);
-        await GuestService.UpdateAsync(guests);
+        await _guestService.UpdateAsync(guests);
         IsUploading = false;
         this.guests = guests;
         StateHasChanged();
@@ -264,7 +266,7 @@
     private async Task DownloadGuests()
     {
         IsDownloading = true;
-        var guests = await GuestService.GetAllAsync(true);
+        var guests = await _guestService.GetAllAsync(true);
 
         var now = DateTime.UtcNow.ToString("yyyyMMddTHHmmss");
 
