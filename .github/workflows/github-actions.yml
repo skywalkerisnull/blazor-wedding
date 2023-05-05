@@ -47,7 +47,7 @@ jobs:
           push: true
           tags: skywalkerisnull/blazor-wedding:latest
           file: ./src/Wedding/Dockerfile
-          context: ./src
-          platforms: linux/arm64
+          context: ./src/Wedding
+          platforms: linux/amd64,linux/arm64
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
