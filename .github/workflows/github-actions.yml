@@ -47,5 +47,5 @@ jobs:
           push: true
           tags: skywalkerisnull/blazor-wedding:latest
           file: ./src/Wedding/Dockerfile
-          context: .
+          context: "{{defaultContext}}:src"
           platforms: linux/amd64,linux/arm64
