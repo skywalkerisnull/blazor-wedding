@@ -34,18 +34,20 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       # Logs in to Docker Hub using secrets
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      #- name: Log in to Docker Hub
+      #  uses: docker/login-action@v1 
+      #  with:
+      #    username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #    password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       # Builds and pushes the Docker image using dotnet 7 and ARM64 architecture
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: skywalkerisnull/blazor-wedding:latest
-          file: ./src/Wedding/Dockerfile
+          dockerfile: ./src/Wedding/Dockerfile
           context: ../
           platforms: linux/arm64
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
