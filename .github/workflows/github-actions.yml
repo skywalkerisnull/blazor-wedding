@@ -1,0 +1,50 @@
+# This is a basic workflow to build a docker container of dotnet 7 for ARM64
+
+name: Build docker container
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This job builds the docker container
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Sets up QEMU for cross-platform builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      # Sets up Docker Buildx for building and pushing Docker images
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # Logs in to Docker Hub using secrets
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      # Builds and pushes the Docker image using dotnet 7 and ARM64 architecture
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: skywalkerisnull/blazor-wedding:latest
+          file: ./Dockerfile
+          platforms: linux/arm64
