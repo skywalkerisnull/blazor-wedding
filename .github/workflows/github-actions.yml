@@ -42,7 +42,7 @@ jobs:
 
       # Builds and pushes the Docker image using dotnet 7 and ARM64 architecture
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v4
         with:
           push: true
           tags: skywalkerisnull/blazor-wedding:latest
