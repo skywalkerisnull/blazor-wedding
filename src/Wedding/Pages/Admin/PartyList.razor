@@ -267,8 +267,6 @@
         {
             var updatedParty = (Party)result.Data;
             await partyService.UpdateAsync(updatedParty);
-            var index = parties.IndexOf(party);
-            parties[index] = updatedParty;
             StateHasChanged();
             await table.ReloadServerData();
         }
