@@ -209,7 +209,7 @@
                 data = data.OrderByDirection(state.SortDirection, o => o.InvitationSent);
                 break;
             case "date_sent":
-                data = data.OrderByDirection(state.SortDirection, o => o.InviteSentDate);
+                data = data.OrderByDirection(state.SortDirection, o => o.SaveTheDateSent);
                 break;
         }
 
