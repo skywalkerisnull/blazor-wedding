@@ -42,6 +42,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       # Builds and pushes the Docker image using dotnet 7 and ARM64 architecture
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -49,5 +57,7 @@ jobs:
           push: true
           tags: skywalkerisnull/blazor-wedding:latest
           file: ./src/Wedding/Dockerfile
-          context: .
+          context: "{{defaultContext}}"
           platforms: linux/amd64,linux/arm64
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
