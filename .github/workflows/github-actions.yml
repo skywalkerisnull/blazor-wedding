@@ -57,7 +57,8 @@ jobs:
           push: true
           tags: skywalkerisnull/blazor-wedding:latest
           file: ./src/Wedding/Dockerfile
-          context: "{{defaultContext}}"
+          context: ./src/
+          #context: "{{defaultContext}}"
           platforms: linux/amd64,linux/arm64
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
