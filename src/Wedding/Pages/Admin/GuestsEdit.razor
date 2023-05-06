@@ -12,10 +12,10 @@
 @inject IPartyService _partyService
 @inject ApplicationDbContext _context
 
-<h3>Guest List</h3>
 
 <AuthorizeView>
     <Authorized>
+        <h3>Guest List</h3>
         <MudGrid Justify="Justify.FlexEnd">
 
             <MudItem xs="6">
@@ -121,6 +121,9 @@
             </PagerContent>
         </MudTable>
     </Authorized>
+    <NotAuthorized>
+        This page does not seem to exist
+    </NotAuthorized>
 </AuthorizeView>
 
 @code {

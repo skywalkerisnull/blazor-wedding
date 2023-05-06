@@ -18,7 +18,7 @@ else
 
         <p>
             <label for="content"></label>
-            <RadzenHtmlEditor @bind-Value=@entity.Content UploadUrl="api/Image/upload" style="height: 300px;" />
+            <RadzenHtmlEditor @bind-Value=@entity.Content UploadUrl="api/Image/upload" />
         </p>
         <MudButton Disabled="@_processing"
                Variant="MudBlazor.Variant.Filled"
