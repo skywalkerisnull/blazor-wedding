@@ -16,94 +16,110 @@
 
 <AuthorizeView>
     <Authorized>
-<MudGrid Justify="Justify.FlexEnd">
+        <MudGrid Justify="Justify.FlexEnd">
 
-    <MudItem xs="6">
-        <MudFileUpload T="IBrowserFile" FilesChanged="UploadGuests" Accept=".xlsx">
-            <ButtonTemplate Context="buttonContext">
-                <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" for="@buttonContext">
-                    @if (IsUploading)
+            <MudItem xs="6">
+                <MudFileUpload T="IBrowserFile" FilesChanged="UploadGuests" Accept=".xlsx">
+                    <ButtonTemplate Context="buttonContext">
+                        <MudButton HtmlTag="label" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" for="@buttonContext">
+                            @if (IsUploading)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Uploading</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Upload Guests</MudText>
+                            }
+                        </MudButton>
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </MudItem>
+
+            <MudItem xs="6">
+                <MudButton Disabled="@IsDownloading" OnClick="DownloadGuests" Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudDownload">
+                    @if (IsDownloading)
                     {
                         <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                        <MudText Class="ms-2">Uploading</MudText>
+                        <MudText Class="ms-2">Downloading</MudText>
                     }
                     else
                     {
-                        <MudText>Upload Guests</MudText>
+                        <MudText>Download Guests</MudText>
                     }
                 </MudButton>
-            </ButtonTemplate>
-        </MudFileUpload>
-    </MudItem>
+            </MudItem>
 
-    <MudItem xs="6">
-        <MudButton Disabled="@IsDownloading" OnClick="DownloadGuests" Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.CloudDownload">
-            @if (IsDownloading)
-            {
-                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                <MudText Class="ms-2">Downloading</MudText>
-            }
-            else
-            {
-                <MudText>Download Guests</MudText>
-            }
-        </MudButton>
-    </MudItem>
-
-</MudGrid>
-<MudTable 
-    Items="@guests" 
-    Hover="true" 
-          @ref="table"
-          SortLabel="Sort By"
-          Filter="new Func<Guest, bool>(FilterFunc)"
-          @bind-SelectedItem="selectedItem"
-          ServerData="@(new Func<TableState, Task<TableData<Guest>>>(ServerReload))">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Guests</MudText>
-        <MudSpacer />
+        </MudGrid>
+        <MudSpacer></MudSpacer>
+        <MudTable Items="@guests"
+                  Hover="true"
+                  @ref="table"
+                  SortLabel="Sort By"
+                  Filter="new Func<Guest, bool>(FilterFunc)"
+                  @bind-SelectedItem="selectedItem"
+                  ServerData="@(new Func<TableState, Task<TableData<Guest>>>(ServerReload))">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Guests</MudText>
+                <MudSpacer />
                 <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        <MudSpacer />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddGuest">Add Guest</MudButton>
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh>
-            <MudTableSortLabel SortLabel="name" SortBy="@((Guest p) => p.LastName)" ThenBy="@((Guest p) => p.FirstName)" InitialDirection="SortDirection.Ascending">
-                Name
-            </MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="party" SortBy="@((Guest p) => p.Party)">
-                Party
-            </MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="is_attending" SortBy="@((Guest p) => p.IsAttending)">
-                Is Attending
-            </MudTableSortLabel>
-        </MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="guest">
-        <MudTd DataLabel="Name">@guest.FirstName @guest.LastName</MudTd>
-        <MudTd DataLabel="Party"><MudChip Text="@guest.Party?.PartyName" /></MudTd>
-        <MudTd DataLabel="Is Attending">@guest.IsAttending</MudTd>
-        <MudTd DataLabel="Actions">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditGuest(guest))">Edit</MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteGuest(guest))">Delete</MudButton>
-            </MudTd>
-    </RowTemplate>
-    <NoRecordsContent>
-        <MudText>No Party or Guest records found</MudText>
-    </NoRecordsContent>
-    <LoadingContent>
-        <MudText>Loading...</MudText>
-    </LoadingContent>
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
+                <MudSpacer />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddGuest">Add Guest</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>
+                    <MudTableSortLabel SortLabel="name" SortBy="@((Guest p) => p.LastName)" ThenBy="@((Guest p) => p.FirstName)" InitialDirection="SortDirection.Ascending">
+                        Name
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortLabel="party" SortBy="@((Guest p) => p.Party)">
+                        Party
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortLabel="is_attending" SortBy="@((Guest p) => p.IsAttending)">
+                        Is Attending
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortLabel="is_attending_rehersal" SortBy="@((Guest p) => p.IsAttendingRehersalDinner)">
+                        Is Attending Rehersal
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortLabel="invite_accepted" SortBy="@((Guest p) => p.InviteAccepted)">
+                        Invite Acceptance Date
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="guest">
+                <MudTd DataLabel="Name">@guest.FirstName @guest.LastName</MudTd>
+                <MudTd DataLabel="Party">@guest.Party?.PartyName</MudTd>
+                <MudTd DataLabel="Is Attending">
+                    <MudSwitch Checked="@guest.IsAttending" Disabled="true" Color="Color.Success" UnCheckedColor="Color.Error" />
+                </MudTd>
+                <MudTd DataLabel="Is Attending Rehersal">
+                    <MudSwitch Checked="@guest.IsAttendingRehersalDinner" Disabled="true" Color="Color.Success" UnCheckedColor="Color.Error" />
+                </MudTd>
+                <MudTd DataLabel="Invite Accepted">@guest.InviteAccepted</MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditGuest(guest))">Edit</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteGuest(guest))">Delete</MudButton>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>No Party or Guest records found</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <MudText>Loading...</MudText>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
     </Authorized>
 </AuthorizeView>
 
@@ -148,15 +164,21 @@
         switch (state.SortLabel)
         {
             case "name":
-                data = data.OrderByDirection(state.SortDirection, o => o.LastName).OrderByDirection(state.SortDirection, o=>o.FirstName);
+                data = data.OrderByDirection(state.SortDirection, o => o.LastName).OrderByDirection(state.SortDirection, o => o.FirstName);
                 break;
             case "party":
                 data = data.OrderByDirection(
-                    state.SortDirection, 
-                    o => o.Party?.PartyName?? "");
+                    state.SortDirection,
+                    o => o.Party?.PartyName ?? "");
                 break;
             case "is_attending":
                 data = data.OrderByDirection(state.SortDirection, o => o.IsAttending);
+                break;
+            case "is_attending_rehersal":
+                data = data.OrderByDirection(state.SortDirection, o => o.IsAttendingRehersalDinner);
+                break;
+            case "invite_accepted":
+                data = data.OrderByDirection(state.SortDirection, o => o.InviteAccepted);
                 break;
         }
 
