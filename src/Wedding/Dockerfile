@@ -1,11 +1,11 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0-preview-alpine AS base
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0-preview AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-preview-alpine AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-preview AS build
 WORKDIR /src
 COPY ["Wedding/Wedding.csproj", "Wedding/"]
 RUN dotnet restore "Wedding/Wedding.csproj"
@@ -17,7 +17,9 @@ FROM build AS publish
 RUN dotnet publish -a $TARGETARCH "Wedding.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-RUN apt-get update && apt-get install libfontconfig1 -y && apt-get clean
+RUN apt-get update && \
+	apt-get install libfontconfig1 -y && \
+	apt-get clean
 
 ENV DOTNET_RUNNING_IN_CONTAINER=true
 WORKDIR /app
