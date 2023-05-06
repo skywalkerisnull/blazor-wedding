@@ -50,4 +50,5 @@ jobs:
           tags: skywalkerisnull/blazor-wedding:latest
           file: ./src/Wedding/Dockerfile
           context: ./src/
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          #platforms: linux/amd64,linux/arm64
