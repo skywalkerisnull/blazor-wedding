@@ -21,13 +21,13 @@
                         <MudTextField Label="Comments" @bind-Value="@party.Comments" For="@(() => party.Comments)"/>
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch Label="Invited" @bind-Checked="@party.IsInvited"/>
+                        <MudSwitch Label="Invited" @bind-Checked="@party.IsInvited" Color="Color.Success" UnCheckedColor="Color.Error" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch Label="Invitiation Sent" @bind-Checked="@party.InvitationSent"/>
+                        <MudSwitch Label="Invitiation Sent" @bind-Checked="@party.InvitationSent" Color="Color.Success" UnCheckedColor="Color.Error" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch Label="Save the Date Sent" @bind-Checked="@party.SaveTheDateSent" />
+                        <MudSwitch Label="Save the Date Sent" @bind-Checked="@party.SaveTheDateSent" Color="Color.Success" UnCheckedColor="Color.Error" />
                     </MudItem>
                 </MudGrid>
             </DialogContent>

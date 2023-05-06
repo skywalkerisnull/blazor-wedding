@@ -9,9 +9,9 @@
                     <MudTextField @bind-Value="@party.PartyName" Label="Party Name" Required="true"/>
                     <MudTextField @bind-Value="@party.Address" Label="Address"/>
                     <MudTextField @bind-Value="@party.Comments" Label="Comments"/>
-                    <MudSwitch  @bind-Checked="@party.IsInvited" Label="Is Invited" Color="Color.Success"/>
-                    <MudSwitch @bind-Checked="@party.InvitationOpened" Label="Invitation Opened"/>
-                    <MudSwitch @bind-Checked="@party.InvitationSent" Label="Invitation Sent" Color="Color.Success" />
+                    <MudSwitch @bind-Checked="@party.IsInvited" Label="Is Invited" Color="Color.Success" UnCheckedColor="Color.Error" />
+                    <MudSwitch @bind-Checked="@party.InvitationOpened" Label="Invitation Opened" Color="Color.Success" UnCheckedColor="Color.Error" />
+                    <MudSwitch @bind-Checked="@party.InvitationSent" Label="Invitation Sent" Color="Color.Success" UnCheckedColor="Color.Error" />
                     <MudTextField @bind-Value="@party.UniqueInviteId" Label="Unique Invite Id" Required="true"/>
                     <MudDatePicker @bind-Date="@inviteSentDate" Label="Invite Sent Date"/>
                     @* Add more fields for the other properties of the Party class here *@

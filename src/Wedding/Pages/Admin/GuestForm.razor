@@ -18,10 +18,10 @@
                         <MudTextField Required="true" Label="Last Name" @bind-Value="@guest.LastName" For="@(() => guest.LastName)" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending" />
+                        <MudSwitch Label="Attending" @bind-Checked="@guest.IsAttending" Color="Color.Success" UnCheckedColor="Color.Error" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch Label="Rehearsal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner" />
+                        <MudSwitch Label="Rehearsal Dinner" @bind-Checked="@guest.IsAttendingRehersalDinner" Color="Color.Success" UnCheckedColor="Color.Error" />
                     </MudItem>
                     <MudItem xs="12">
                         <MudDatePicker Label="Invite Accepted" @bind-Date="@guest.InviteAccepted" />

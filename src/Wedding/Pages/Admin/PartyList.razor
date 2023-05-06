@@ -81,13 +81,13 @@
                 <MudTd DataLabel="Address">@party.Address</MudTd>
                 <MudTd DataLabel="Comments">@party.Comments</MudTd>
                 <MudTd DataLabel="Invited">
-                    <MudSwitch Checked="@party.IsInvited" Disabled="true"/>
+                    <MudSwitch Checked="@party.IsInvited" Disabled="true" Color="Color.Success" UnCheckedColor="Color.Error"/>
                 </MudTd>
                 <MudTd DataLabel="Invite Sent">
-                    <MudSwitch Checked="@party.InvitationSent" Disabled="true"/>
+                    <MudSwitch Checked="@party.InvitationSent" Disabled="true" Color="Color.Success" UnCheckedColor="Color.Error"/>
                 </MudTd>
                 <MudTd DataLabel="Save the Date Sent">
-                    <MudSwitch Checked="@party.SaveTheDateSent" Disabled="true" />
+                    <MudSwitch Checked="@party.SaveTheDateSent" Disabled="true" Color="Color.Success" UnCheckedColor="Color.Error" />
                 </MudTd>
                 <MudTd DataLabel="Actions">
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditParty(party))">Edit</MudButton>

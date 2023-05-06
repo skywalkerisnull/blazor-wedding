@@ -23,10 +23,10 @@
                 <MudTd DataLabel="First Name">@guest.FirstName</MudTd>
                 <MudTd DataLabel="Last Name">@guest.LastName</MudTd>
                 <MudTd DataLabel="Attending">
-                    <MudSwitch Checked="@guest.IsAttending" Disabled="true"/>
+                    <MudSwitch Checked="@guest.IsAttending" Disabled="true" Color="Color.Success" UnCheckedColor="Color.Error" />
                 </MudTd>
                 <MudTd DataLabel="Rehersal Dinner">
-                    <MudSwitch Checked="@guest.IsAttendingRehersalDinner" Disabled="true"/>
+                    <MudSwitch Checked="@guest.IsAttendingRehersalDinner" Disabled="true" Color="Color.Success" UnCheckedColor="Color.Error" />
                 </MudTd>
                 <MudTd DataLabel="Age Bracket">@guest.AgeBracket</MudTd>
                 <MudTd DataLabel="Actions">
