@@ -11,10 +11,10 @@ COPY ["Wedding/Wedding.csproj", "Wedding/"]
 RUN dotnet restore "Wedding/Wedding.csproj"
 COPY . .
 WORKDIR "/src/Wedding"
-RUN dotnet build "Wedding.csproj" -c Release -o /app/build
+RUN dotnet build -a $TARGETARCH "Wedding.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Wedding.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish -a $TARGETARCH "Wedding.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 RUN apt-get update && \
