@@ -194,7 +194,7 @@ else{
             var result = await _userManager.CreateAsync(user, registerModel.Password);
             if (result.Succeeded)
             {
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var token = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(await _userManager.GenerateEmailConfirmationTokenAsync(user)));
                 var confirmationLink = _navigationManager.ToAbsoluteUri($"/confirm-email?userid={user.Id}&token={token}");
 
                 var emailBody = new ComponentRenderer<RegistrationEmailTemplate>().Set(

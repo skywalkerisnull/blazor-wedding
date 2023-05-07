@@ -25,9 +25,12 @@ else {
     {
         if (_configuration.GetValue("AllowAccountRegistration", false))
         {
-            var userId = _navigationManager.GetUriWithQueryParameter("userid", true);
-            var token = _navigationManager.GetUriWithQueryParameter("token", true);
+            var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+            var queryTokens = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
+            var userId = queryTokens["userid"];
+            var token = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(queryTokens["token"]));
+            
             if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(token))
             {
                 var user = await _userManager.FindByIdAsync(userId);
