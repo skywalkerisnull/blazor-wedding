@@ -1,11 +1,12 @@
 ﻿@page "/login"
 @using Microsoft.AspNetCore.Identity
 @using Wedding.Services
+@using Wedding.Models
+@using Wedding.Templates.Emails
 @using Microsoft.AspNetCore.Components
 @using System.ComponentModel.DataAnnotations
 @using FluentValidation
-@using Wedding.Models
-@using Wedding.Templates.Emails
+
 @using BlazorTemplater;
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Severity = MudBlazor.Severity
@@ -60,6 +61,7 @@ else{
                                         }
                                     </MudButton>
                                     <MudLink Href="/reset-password">Change password</MudLink>
+                                    <MudLink Href="/forgot-password">Forgot password</MudLink>
                                 </div>
                             </MudForm>
                         </MudPaper>
@@ -193,7 +195,7 @@ else{
             if (result.Succeeded)
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = _navigationManager.ToAbsoluteUri($"/confirmemail?userid={user.Id}&token={token}");
+                var confirmationLink = _navigationManager.ToAbsoluteUri($"/confirm-email?userid={user.Id}&token={token}");
 
                 var emailBody = new ComponentRenderer<RegistrationEmailTemplate>().Set(
                     x => x.ConfirmationLink, confirmationLink.ToString()).Render();
