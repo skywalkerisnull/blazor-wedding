@@ -1,0 +1,19 @@
+﻿@page "/accomodation"
+
+<MudCarousel @onmouseover="MouseOver" @onmouseout="MouseOut" TData="object" AutoCycle="@_autocycle" CycleInterval="5000">
+
+</MudCarousel>
+
+@code {
+    private bool _autocycle = true;
+
+    private void MouseOver(MouseEventArgs e)
+    {
+        _autocycle = false;
+    }
+
+    private void MouseOut(MouseEventArgs e)
+    {
+        _autocycle = true;
+    }
+}

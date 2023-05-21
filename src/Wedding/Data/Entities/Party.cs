@@ -20,5 +20,8 @@ namespace Wedding.Data.Entities
         public string UniqueInviteId { get; set; }
 
         public DateTime InviteSentDate { get; set; }
+
+        //[Required]
+        public WeddingSetup? WeddingSetup { get; set; }
     }
 }
