@@ -23,7 +23,6 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(
     options => { 
         options.SignIn.RequireConfirmedAccount = true;
-        options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultEmailProvider;
         })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
