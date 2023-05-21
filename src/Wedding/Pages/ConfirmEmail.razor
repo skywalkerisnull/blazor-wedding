@@ -1,9 +1,12 @@
 ﻿@page "/confirm-email"
-@using Microsoft.AspNetCore.Identity 
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text
 
 @inject IConfiguration _configuration
 @inject UserManager<IdentityUser> _userManager 
 @inject NavigationManager _navigationManager
+@inject ISnackbar Snackbar
 
 <h3>Confirm your email address</h3>
 
@@ -28,37 +31,52 @@ else {
             var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
             var queryTokens = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
-            var userId = queryTokens["userid"];
-            var token = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(queryTokens["token"]));
-            
-            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(token))
+            string? Token = null;
+            string? UserId = null;
+
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("Token", out var token))
             {
-                var user = await _userManager.FindByIdAsync(userId);
+                Token = Encoding.UTF8.GetString(Convert.FromBase64String(token.First()));
+            }
+
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("UserId", out var userid))
+            {
+                UserId = userid.First();
+            }
+
+            if (Token is not null && UserId is not null)
+            {
+                var user = await _userManager.FindByIdAsync(UserId);
                 if (user != null)
                 {
-                    var result = await _userManager.ConfirmEmailAsync(user, token);
+                    var result = await _userManager.ConfirmEmailAsync(user, Token);
                     if (result.Succeeded)
                     {
                         _confirmed = true;
+                        Snackbar.Add("Email address has been confirmed.", Severity.Success);
                     }
                     else
                     {
                         _error = true;
+                        Snackbar.Add("Something went wrong, your email address has not been confirmed.", Severity.Error);
                     }
                 }
                 else
                 {
                     _error = true;
+                    Snackbar.Add("Something went wrong, your email address has not been confirmed.", Severity.Error);
                 }
             }
             else
             {
                 _error = true;
+                Snackbar.Add("Something went wrong, your email address has not been confirmed.", Severity.Error);
             }
         }
         else
         {
             _error = true;
+            Snackbar.Add("Something went wrong, your email address has not been confirmed.", Severity.Error);
         }
     }
 }

@@ -6,6 +6,8 @@
 @using Microsoft.AspNetCore.Components
 @using System.ComponentModel.DataAnnotations
 @using FluentValidation
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text
 
 @using BlazorTemplater;
 @using Microsoft.AspNetCore.Identity.UI.Services
@@ -194,8 +196,9 @@ else{
             var result = await _userManager.CreateAsync(user, registerModel.Password);
             if (result.Succeeded)
             {
-                var token = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(await _userManager.GenerateEmailConfirmationTokenAsync(user)));
-                var confirmationLink = _navigationManager.ToAbsoluteUri($"/confirm-email?userid={user.Id}&token={token}");
+                var tokenGen = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(tokenGen));
+                var confirmationLink = _navigationManager.ToAbsoluteUri($"/confirm-email?UserId={user.Id}&Token={token}");
 
                 var emailBody = new ComponentRenderer<RegistrationEmailTemplate>().Set(
                     x => x.ConfirmationLink, confirmationLink.ToString()).Render();
