@@ -15,6 +15,6 @@ namespace Wedding.Data.Entities
         public string Slug { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
-        public WeddingSetup WeddingSetup { get; set; }
+        public WeddingSetup? WeddingSetup { get; set; }
     }
 }
