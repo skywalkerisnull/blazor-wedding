@@ -1,4 +1,5 @@
-﻿@using System.ComponentModel.DataAnnotations
+﻿@using PhoneNumbers
+@using System.ComponentModel.DataAnnotations
 @inject IDialogService DialogService
 @inject HttpClient Http
 
@@ -17,10 +18,10 @@
                         <MudTextField Label="Accomodation Description" @bind-Value="@Option.AccomodationDescription" For="@(() => Option.AccomodationDescription)" Required="true" Lines="3" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudTextField Label="Accomodation URL" @bind-Value="@Option.AccomodationUrl" For="@(() => Option.AccomodationUrl)" Required="true" />
+                        <MudTextField Label="Accomodation URL" InputType="@InputType.Url" @bind-Value="@accomUrl" For="@(() => accomUrl)" Required="true" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudTextField Label="Phone Number" @bind-Value="@Option.PhoneNumber" For="@(() => Option.PhoneNumber)" />
+                        <MudTextField Label="Phone Number" InputType="@InputType.Telephone" @bind-Value="@accomPhone" For="@(() => accomPhone)" />
                     </MudItem>
                     <MudItem xs="12">
                         <MudFileUpload Label="Picture" @bind-Files="@Files" MaxFiles="1" />
@@ -38,8 +39,11 @@
 @code {
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
     private MudForm _form;
-    private AccomodationOptions Option;
+    [Parameter]  public AccomodationOptions Option { get; set; }
     private IEnumerable<IBrowserFile> Files;
+
+    private string accomUrl = "";
+    private string accomPhone = "";
 
     // Get the option from the dialog parameters
     protected override void OnInitialized()
@@ -56,6 +60,17 @@
     {
         if (_form.IsValid)
         {
+            Option.AccomodationUrl = new Uri(accomUrl);
+            PhoneNumberUtil phoneUtil = PhoneNumberUtil.GetInstance();
+            try
+            {
+                Option.PhoneNumber = phoneUtil.Parse(accomPhone, "AU");
+            }
+            catch (NumberParseException e)
+            {
+                Console.WriteLine($"Error with phone number {e}");
+            }
+
             // Upload the picture file to a service or a database
             if (Files != null && Files.Any())
             {
