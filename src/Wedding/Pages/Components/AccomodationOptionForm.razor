@@ -1,0 +1,94 @@
+﻿@using System.ComponentModel.DataAnnotations
+@inject IDialogService DialogService
+@inject HttpClient Http
+
+<AuthorizeView>
+    <Authorized>
+        <MudDialog>
+            <DialogContent>
+                <MudForm @ref="_form" Model="@Option">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Accomodation Name" @bind-Value="@Option.AccomodationName" For="@(() => Option.AccomodationName)" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Accomodation Type" @bind-Value="@Option.AccomodationType" For="@(() => Option.AccomodationType)" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="Accomodation Description" @bind-Value="@Option.AccomodationDescription" For="@(() => Option.AccomodationDescription)" Required="true" Lines="3" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="Accomodation URL" @bind-Value="@Option.AccomodationUrl" For="@(() => Option.AccomodationUrl)" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="Phone Number" @bind-Value="@Option.PhoneNumber" For="@(() => Option.PhoneNumber)" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudFileUpload Label="Picture" @bind-Files="@Files" MaxFiles="1" />
+                    </MudItem>
+                </MudForm>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Color="Color.Primary" OnClick="@Save">Save</MudButton>
+                <MudButton Color="Color.Default" OnClick="@Cancel">Cancel</MudButton>
+            </DialogActions>
+        </MudDialog>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+    private MudForm _form;
+    private AccomodationOptions Option;
+    private IEnumerable<IBrowserFile> Files;
+
+    // Get the option from the dialog parameters
+    protected override void OnInitialized()
+    {
+
+        if (Option is null)
+        {
+            Option = new AccomodationOptions();
+        }
+    }
+
+    // Save the option and close the dialog
+    private async Task Save()
+    {
+        if (_form.IsValid)
+        {
+            // Upload the picture file to a service or a database
+            if (Files != null && Files.Any())
+            {
+                var file = Files.First();
+                var stream = file.OpenReadStream();
+                var content = new MultipartFormDataContent();
+                content.Add(new StreamContent(stream), "file", file.Name);
+                var response = await Http.PostAsync("upload", content);
+                // Check if the response is successful
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response content as a JSON object
+                    var json = await response.Content.ReadFromJsonAsync<UploadResult>();
+                    Option.Picture.PictureId = Guid.Parse(json.Id);
+                }
+                else
+                {
+                    Console.WriteLine($"Upload failed: {response.ReasonPhrase}");
+                }
+            }
+            Dialog.Close(DialogResult.Ok(Option));
+        }
+    }
+
+    // Cancel the dialog
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+    public class UploadResult
+    {
+        public string Url { get; set; }
+        public string Id { get; set; }
+    }
+}

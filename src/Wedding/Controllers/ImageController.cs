@@ -121,7 +121,10 @@ namespace Wedding.Controllers
 
                         context.Pictures.Add(picture);
                         await context.SaveChangesAsync();
-                        return Ok(new { Url = url });
+                        return Ok(new { 
+                            Url = url,
+                            Id = picture.PictureId.ToString()
+                        });
                     }
                 }
                 throw new ArgumentException("The image did not pass the validation");

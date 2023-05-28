@@ -1,0 +1,138 @@
+﻿@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@using Wedding.Services
+@using Wedding.Pages.Components
+
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IAccomodationService accomService
+
+<AuthorizeView>
+    <Authorized>
+        <MudTable Items="@AccomodationOptions" Hover="true" Dense="true" Filter="new Func<AccomodationOptions, bool>(FilterFunc)" @ref="Table">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Accomodation Options</MudText>
+                <MudSpacer />
+                <MudTextField Label="Search" @bind-Value="@SearchString" Immediate="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddOption">Add</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Type</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>URL</MudTh>
+                <MudTh>Phone Number</MudTh>
+                <MudTh>Picture</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="accom">
+                <MudTd DataLabel="Name">@accom.AccomodationName</MudTd>
+                <MudTd DataLabel="Type">@accom.AccomodationType</MudTd>
+                <MudTd DataLabel="Description">@accom.AccomodationDescription</MudTd>
+                <MudTd DataLabel="URL"><a href="@accom.AccomodationUrl">@accom.AccomodationUrl</a></MudTd>
+                <MudTd DataLabel="Phone Number">@accom.PhoneNumber</MudTd>
+                <MudTd DataLabel="Picture"><img src="@accom.Picture.FileUrl" width="100" height="100" /></MudTd>
+                <MudTd>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => EditOption(accom))">Edit</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="@(() => DeleteOption(accom))">Delete</MudButton>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </Authorized>
+    <NotAuthorized>
+        This page does not seem to exist
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private MudTable<AccomodationOptions> Table;
+    private string SearchString = "";
+    private List<AccomodationOptions> AccomodationOptions = new List<AccomodationOptions>();
+
+    // Load the data from the database or a service
+    protected override async Task OnInitializedAsync()
+    {
+        AccomodationOptions = await accomService.GetAllAsync();
+    }
+
+    // Filter the table by the search string
+    private bool FilterFunc(AccomodationOptions option)
+    {
+        if (string.IsNullOrWhiteSpace(SearchString))
+            return true;
+        if (option.AccomodationName.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (option.AccomodationType.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (option.AccomodationDescription.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (option.AccomodationUrl.ToString().Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (option.PhoneNumber.ToString().Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    // Add a new option to the table
+    private async Task AddOption()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Option", new AccomodationOptions());
+
+        var dialog = DialogService.Show<AccomodationOptionForm>("Add Accomodation Option", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var option = result.Data as AccomodationOptions;
+            // Save the option to the database or a service
+            await accomService.UpdateAsync(option);
+            // Update the table data
+            AccomodationOptions.Add(option);
+            await Table.ReloadServerData();
+            Snackbar.Add("Accomodation option added successfully.", Severity.Success);
+        }
+    }
+
+    // Edit an existing option in the table
+    private async Task EditOption(AccomodationOptions option)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Option", option);
+
+        var dialog = DialogService.Show<AccomodationOptionForm>("Edit Accomodation Option", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            var accomOption = result.Data as AccomodationOptions;
+            // Update the option in the database or a service
+            await accomService.UpdateAsync(accomOption);
+            // Refresh the table data
+            await Table.ReloadServerData();
+            Snackbar.Add("Accomodation option updated successfully.", Severity.Success);
+        }
+    }
+
+    // Delete an option from the table
+    private async Task DeleteOption(AccomodationOptions option)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            "Are you sure you want to delete this accomodation option?",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (result == true)
+        {
+            // Delete the option from the database or a service
+            await accomService.DeleteAsync(option);
+            // Remove the option from the table data
+            AccomodationOptions.Remove(option);
+            await Table.ReloadServerData();
+            Snackbar.Add("Accomodation option deleted successfully.", Severity.Success);
+        }
+    }
+}
