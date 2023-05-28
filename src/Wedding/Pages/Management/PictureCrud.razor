@@ -3,73 +3,75 @@
 @using Wedding.Models
 @using Wedding.Services
 @inject IPictureService PictureService
+@inject IDialogService dialogService
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-@*<AuthorizeView>
-    <Authorized>*@
-
-        <MudGrid>
-            <MudItem xs="12">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenUploadDialog">Upload Image</MudButton>
-            </MudItem>
-            <MudItem xs="12">
-                <MudTable Items="@Pictures" Hover="true" RowClick="OpenEditDialog">
-                    <HeaderContent>
-                        <MudTh>Thumbnail</MudTh>
-                        <MudTh>File Name</MudTh>
-                        <MudTh>File Size</MudTh>
-                        <MudTh>Dimensions</MudTh>
-                        <MudTh>Actions</MudTh>
-                    </HeaderContent>
-                    <RowTemplate Context="imageGridContext">
-                        <MudTd DataLabel="Thumbnail"><img src="@imageGridContext.ThumbnailUrl" alt="@imageGridContext.AlternativeText" /></MudTd>
-                        <MudTd DataLabel="File Name">@imageGridContext.FileName</MudTd>
-                        <MudTd DataLabel="File Size">@FormatFileSize(imageGridContext.FileSize)</MudTd>
-                        <MudTd DataLabel="Dimensions">@FormatDimensions(imageGridContext.PixelsX, imageGridContext.PixelsY)</MudTd>
-                        <MudTd DataLabel="Actions">
-                            <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="@(() => DownloadImage(imageGridContext))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteImage(imageGridContext))" />
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudItem>
-        </MudGrid>
+<MudGrid>
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenUploadDialog">Upload Image</MudButton>
+    </MudItem>
+    <MudItem xs="12">
+        <MudTable Items="@Pictures" Hover="true" RowClick="OpenEditDialog">
+            <HeaderContent>
+                <MudTh>Thumbnail</MudTh>
+                <MudTh>File Name</MudTh>
+                <MudTh>File Size</MudTh>
+                <MudTh>Dimensions</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="imageGridContext">
+                <MudTd DataLabel="Thumbnail"><img src="@imageGridContext.ThumbnailUrl" alt="@imageGridContext.AlternativeText" /></MudTd>
+                <MudTd DataLabel="File Name">@imageGridContext.FileName</MudTd>
+                <MudTd DataLabel="File Size">@FormatFileSize(imageGridContext.FileSize)</MudTd>
+                <MudTd DataLabel="Dimensions">@FormatDimensions(imageGridContext.PixelsX, imageGridContext.PixelsY)</MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteImage(imageGridContext))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudItem>
+</MudGrid>
 
 
-        <MudDialog @bind-IsVisible="@UploadDialogIsOpen">
-            <DialogContent>
-                <h3>Upload Image</h3>
-                <p>Select an image file to upload to the server.</p>
-                <input type="file" @onchange="OnFileSelected" />
-            </DialogContent>
-            <DialogActions>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadImage">Upload</MudButton>
-                <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="CloseUploadDialog">Cancel</MudButton>
-            </DialogActions>
-        </MudDialog>
+<MudDialog @bind-IsVisible="@UploadDialogIsOpen">
+@*    <DialogContent>
+        <h3>Upload Image</h3>
+        <p>Select an image file to upload to the server.</p>
+        <input type="file" @onchange="(e) => OnFileSelected(e)" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadImage">Upload</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="CloseUploadDialog">Cancel</MudButton>
+    </DialogActions>*@
+    <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected">
+        <ButtonTemplate>
+            <MudButton HtmlTag="label"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                       for="@context">
+                Upload Files
+            </MudButton>
+        </ButtonTemplate>
+    </MudFileUpload>
+</MudDialog>
 
-        <MudDialog @bind-IsVisible="@EditDialogIsOpen">
-            <DialogContent>
-                <h3>Edit Image</h3>
-                <p>Click on the image to view it in full resolution.</p>
-                <MudLink Href="@SelectedPicture.FileUrl.ToString()" Target="_blank">
-                    <img src="@SelectedPicture.ThumbnailUrl" alt="@SelectedPicture.AlternativeText" />
-                </MudLink>
-                <MudTextField Label="Alternative Text" @bind-Value="@SelectedPicture.AlternativeText" />
-                <MudTextField Label="File Description" @bind-Value="@SelectedPicture.FileDescription" />
-            </DialogContent>
-            <DialogActions>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveImage">Save</MudButton>
-                <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="CloseEditDialog">Cancel</MudButton>
-            </DialogActions>
-        </MudDialog>
-
-@*    </Authorized>
-    <NotAuthorized>
-        This page does not seem to exist
-    </NotAuthorized>
-</AuthorizeView>*@
+<MudDialog @bind-IsVisible="@EditDialogIsOpen">
+    <DialogContent>
+        <h3>Edit Image</h3>
+        <p>Click on the image to view it in full resolution.</p>
+        <MudLink Href="@SelectedPicture.FileUrl.ToString()" Target="_blank">
+            <img src="@SelectedPicture.ThumbnailUrl" alt="@SelectedPicture.AlternativeText" />
+        </MudLink>
+        <MudTextField Label="Alternative Text" @bind-Value="@SelectedPicture.AlternativeText" />
+        <MudTextField Label="File Description" @bind-Value="@SelectedPicture.FileDescription" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveImage">Save</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="CloseEditDialog">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
 
 
 @code {
@@ -100,10 +102,10 @@
         UploadDialogIsOpen = false;
     }
 
-    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    private async Task OnFileSelected(IBrowserFile file)
     {
         // Get the selected file from the input
-        SelectedFile = e.File;
+        SelectedFile = file;
     }
 
     private async Task UploadImage()
@@ -160,19 +162,6 @@
         CloseEditDialog();
     }
 
-    private async Task DownloadImage(Picture picture)
-    {
-        // Get the file url and name
-        var fileUrl = picture.FileUrl;
-        var fileName = picture.FileName;
-
-        // Download the file from the server
-        var fileBytes = await _httpClient.GetByteArrayAsync(fileUrl);
-
-        // Save the file to the browser
-        await JSRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
-    }
-
     private async Task DeleteImage(Picture picture)
     {
         // Confirm the deletion
@@ -181,7 +170,7 @@
         parameters.Add("ButtonText", "Delete");
         parameters.Add("Color", Color.Error);
 
-        var dialog = DialogService.Show<DeleteDialog>
+        var dialog = dialogService.Show<DeleteImageDialog>
             ("Delete Image", parameters);
         var result = await dialog.Result;
 

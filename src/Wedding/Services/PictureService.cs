@@ -216,6 +216,22 @@ namespace Wedding.Services
             }
         }
 
+        public async Task UpdatePictureAsync(Picture picture)
+        {
+            // Check if the picture exists in the database
+            var existingPicture = await GetPictureAsync(picture.PictureId);
+            if (existingPicture == null) return;
+
+            // Update the picture record with the new data
+            existingPicture.AlternativeText = picture.AlternativeText;
+            existingPicture.FileDescription = picture.FileDescription;
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            // Save the changes to the database
+            context.Pictures.Update(existingPicture);
+            await context.SaveChangesAsync();
+        }
+
         //private async Task GenerateThumbnailAsync(Uri fileUrl, Uri thumbnailUrl)
         //{
         //    // Use an image library to resize and save the thumbnail image

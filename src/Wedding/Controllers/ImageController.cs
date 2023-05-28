@@ -56,6 +56,7 @@ namespace Wedding.Controllers
                 var picture = new Picture()
                 {
                     PictureId = Guid.NewGuid(),
+                    FileSize = (uint)file.Length,
                     OriginalFileName = file.FileName,
                     FileHash = hash,
                     DateTimeUploadedUtc = DateTime.UtcNow,
@@ -111,6 +112,7 @@ namespace Wedding.Controllers
                         var picture = new Picture()
                         {
                             PictureId = Guid.NewGuid(),
+                            FileSize = (uint)file.Length,
                             OriginalFileName = file.FileName,
                             FileHash = hash,
                             DateTimeUploadedUtc = DateTime.UtcNow,

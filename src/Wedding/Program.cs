@@ -41,6 +41,7 @@ builder.Services.AddTransient<IValidator<RegisterModel>, RegisterModelValidator>
 
 builder.Services.AddScoped<IGuestService, GuestService>();
 builder.Services.AddScoped<IPartyService, PartyService>();
+builder.Services.AddScoped<IPictureService, PictureService>();
 builder.Services.AddScoped<ImageController>();
 
 
