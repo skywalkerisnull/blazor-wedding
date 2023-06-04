@@ -1,7 +1,12 @@
 ﻿@using PhoneNumbers
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components;
+@using Wedding.Models
+@using Wedding.Services
+
 @inject IDialogService DialogService
 @inject HttpClient Http
+@inject IPictureService PictureService
 
 <AuthorizeView>
     <Authorized>
@@ -24,7 +29,28 @@
                         <MudTextField Label="Phone Number" InputType="@InputType.Telephone" @bind-Value="@accomPhone" For="@(() => accomPhone)" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudFileUpload Label="Picture" @bind-Files="@Files" MaxFiles="1" />
+                        <MudFileUpload T="IBrowserFile" Context="fileInput" FilesChanged="UploadFiles" @bind-Files="@Files" MaxFiles="1">
+                        <ButtonTemplate>
+                            <MudButton 
+                                HtmlTag="label" 
+                                Variant="Variant.Filled" 
+                                Color="Color.Primary" 
+                                StartIcon="@Icons.Material.Filled.CloudUpload" 
+                                for="@fileInput"> Upload Picture </MudButton>
+                        </ButtonTemplate>
+                        </MudFileUpload>
+
+                    <MudSwitch Label="Select existing picture" @bind-Checked="@selectExisting" />
+
+                    @if (selectExisting)
+                    {
+                        <MudSelect Label="Picture URL" @bind-Value="@selectedUrl">
+                            @foreach (var url in pictureUrls)
+                            {
+                                <MudSelectItem Value="@url">@url</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
                     </MudItem>
                 </MudForm>
             </DialogContent>
@@ -40,10 +66,25 @@
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
     private MudForm _form;
     [Parameter]  public AccomodationOptions Option { get; set; }
-    private IEnumerable<IBrowserFile> Files;
+    //private IEnumerable<IBrowserFile> Files;
 
     private string accomUrl = "";
     private string accomPhone = "";
+
+    IList<IBrowserFile> Files { get; set; }
+    bool selectExisting { get; set; }
+    Uri selectedUrl { get; set; }
+    List<Uri> pictureUrls { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        pictureUrls = await PictureService.GetAllPictureThumbnailUrls();
+    }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        // TODO upload the file to the server
+    }
 
     // Get the option from the dialog parameters
     protected override void OnInitialized()

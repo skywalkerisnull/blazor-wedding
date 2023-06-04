@@ -35,27 +35,27 @@
 
 
 <MudDialog @bind-IsVisible="@UploadDialogIsOpen">
-@*    <DialogContent>
+    <DialogContent>
         <h3>Upload Image</h3>
         <p>Select an image file to upload to the server.</p>
-        <input type="file" @onchange="(e) => OnFileSelected(e)" />
+        <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected">
+            <ButtonTemplate>
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.CloudUpload"
+                           for="@context">
+                    Upload Files
+                </MudButton>
+            </ButtonTemplate>
+        </MudFileUpload>
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadImage">Upload</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="CloseUploadDialog">Cancel</MudButton>
-    </DialogActions>*@
-    <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected">
-        <ButtonTemplate>
-            <MudButton HtmlTag="label"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.CloudUpload"
-                       for="@context">
-                Upload Files
-            </MudButton>
-        </ButtonTemplate>
-    </MudFileUpload>
+    </DialogActions>
 </MudDialog>
+
 
 <MudDialog @bind-IsVisible="@EditDialogIsOpen">
     <DialogContent>
