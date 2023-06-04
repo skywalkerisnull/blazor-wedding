@@ -3,12 +3,23 @@
         <MudGrid Justify="Justify.Center">
             <MudItem xs="4" Align="Align.Left"></MudItem>
             <MudItem xs="4" Align="Align.Center">
-                <a Href="https://github.com/skywalkerisnull/blazor-wedding" Target="_blank">
-                    <MudIcon Icon="@Icons.Custom.Brands.GitHub" />
-                </a>
+                <AuthorizeView>
+                    <Authorized>
+                        <a Href="https://github.com/skywalkerisnull/blazor-wedding" Target="_blank">
+                            <MudIcon Icon="@Icons.Custom.Brands.GitHub" />
+                        </a>
+                    </Authorized>
+                </AuthorizeView>
             </MudItem>
             <MudItem xs="4" Align="Align.Right">
-                <a Href="/login">Login</a>
+                <AuthorizeView>
+                    <Authorized>
+                        <a Href="/login">Logout</a>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a Href="/login">Login</a>
+                    </NotAuthorized>
+                </AuthorizeView>
             </MudItem>
         </MudGrid>
     </MudAppBar>
