@@ -15,15 +15,15 @@
         <MudTable Items="@Pictures" Hover="true" RowClick="OpenEditDialog">
             <HeaderContent>
                 <MudTh>Thumbnail</MudTh>
+                <MudTh>Original File Name</MudTh>
                 <MudTh>File Name</MudTh>
-                <MudTh>File Size</MudTh>
                 <MudTh>Dimensions</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate Context="imageGridContext">
                 <MudTd DataLabel="Thumbnail"><img src="@imageGridContext.ThumbnailUrl" alt="@imageGridContext.AlternativeText" /></MudTd>
+                <MudTd DataLabel="Original File Name">@imageGridContext.OriginalFileName</MudTd>
                 <MudTd DataLabel="File Name">@imageGridContext.FileName</MudTd>
-                <MudTd DataLabel="File Size">@FormatFileSize(imageGridContext.FileSize)</MudTd>
                 <MudTd DataLabel="Dimensions">@FormatDimensions(imageGridContext.PixelsX, imageGridContext.PixelsY)</MudTd>
                 <MudTd DataLabel="Actions">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteImage(imageGridContext))" />
