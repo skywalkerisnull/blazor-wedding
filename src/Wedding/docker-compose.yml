@@ -34,8 +34,18 @@ services:
       - wedding-data-qr:/app/wwwroot/qrcodes
       - wedding-data-images:/app/wwwroot/images
 
+  storage:
+    image: mcr.microsoft.com/azure-blob-storage
+    restart: always
+    env_file: .env
+    ports:
+      - 11002:11002
+    volumes:
+      - wedding-blob-storage:/blobroot
+
 volumes:
   local_pgdata:
   pgadmin-data:
   wedding-data-qr:
   wedding-data-images:
+  wedding-blob-storage:  

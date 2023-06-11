@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageReference Include="BlazorDownloadFile" Version="2.4.0.2" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.1.0" />
     <PackageReference Include="BlazorTemplater" Version="1.5.1" />

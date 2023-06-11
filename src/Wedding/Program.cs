@@ -47,6 +47,7 @@ builder.Services.AddScoped<IPartyService, PartyService>();
 builder.Services.AddScoped<IPictureService, PictureService>();
 builder.Services.AddScoped<IAccomodationService, AccomodationService>();
 builder.Services.AddScoped<ImageController>();
+builder.Services.AddScoped<IFileStorageService, AzureBlobService>();
 
 
 builder.Services.AddScoped<DialogService>();
