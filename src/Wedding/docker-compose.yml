@@ -48,4 +48,4 @@ volumes:
   pgadmin-data:
   wedding-data-qr:
   wedding-data-images:
-  wedding-blob-storage:  
+  wedding-blob-storage:
