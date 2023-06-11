@@ -29,7 +29,7 @@
                         <MudTextField Label="Phone Number" InputType="@InputType.Telephone" @bind-Value="@accomPhone" For="@(() => accomPhone)" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudFileUpload T="IBrowserFile" Context="fileInput" FilesChanged="UploadFiles" @bind-Files="@Files" MaxFiles="1">
+                        <MudFileUpload T="IBrowserFile" Context="fileInput" FilesChanged="UploadFiles" MaxFiles="1">
                         <ButtonTemplate>
                             <MudButton 
                                 HtmlTag="label" 
