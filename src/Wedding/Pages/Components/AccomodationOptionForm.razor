@@ -78,7 +78,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        pictureUrls = await PictureService.GetAllPictureThumbnailUrls();
+        pictureUrls = await PictureService.GetAllPictureUrls();
     }
 
     private async Task UploadFiles(IBrowserFile file)

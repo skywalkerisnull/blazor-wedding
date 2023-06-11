@@ -43,6 +43,12 @@ namespace Wedding.Services
             return await context.Pictures.Select(p => p.ThumbnailUrl).ToListAsync();
         }
 
+        public async Task<List<Uri>> GetAllPictureUrls()
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Pictures.Select(p => p.FileUrl).ToListAsync();
+        }
+
         public async Task DeletePictureAsync(Guid pictureId)
         {
             var picture = await GetPictureAsync(pictureId);

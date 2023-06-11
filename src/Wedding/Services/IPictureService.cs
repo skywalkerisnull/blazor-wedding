@@ -9,6 +9,7 @@ namespace Wedding.Services
         public Task<Picture> GetPictureAsync(Uri pictureUrl);
         public Task<List<Picture>> GetAllPicturesAsync();
         public Task<List<Uri>> GetAllPictureThumbnailUrls();
+        public Task<List<Uri>> GetAllPictureUrls();
         public Task DeletePictureAsync(Guid pictureId);
         public Task<Picture> ReplacePicture(Guid originalPictureId, Guid replacementPictureId);
         public Task UpdatePictureAsync(Picture picture);
