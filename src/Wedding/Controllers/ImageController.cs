@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
+using System.Net;
 using System.Security.Cryptography;
 using Wedding.Data;
 using Wedding.Data.Entities;
@@ -124,6 +126,26 @@ namespace Wedding.Controllers
             }
 
             return File(System.IO.File.OpenRead(filePath), "image/jpeg");
+        }
+
+
+        // GET: /project-id/image-id
+        public async Task<ActionResult> Index(string projectId, string imageId)
+        {
+            // Validate the parameters
+            if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(imageId))
+            {
+                return StatusCode(400, HttpStatusCode.BadRequest);
+            }
+
+            var pictureService = _serviceProvider.GetService<IPictureService>();
+            var picture = await pictureService.GetPictureAsync(Guid.Parse(imageId));
+
+            var storageService = _serviceProvider.GetService<IFileStorageService>();
+            var fileUrl = await storageService.GetFileValet(picture.FileUrl);
+
+            // Return a temporary redirect to the blob URL
+            return RedirectPreserveMethod(fileUrl.ToString());
         }
     }
 }
