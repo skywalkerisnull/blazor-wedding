@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Wedding.Data.Entities
 {
@@ -28,6 +29,10 @@ namespace Wedding.Data.Entities
         [StringLength(500)]
         public string? FileDescription { get; set; }
 
+        [NotMapped]
+        public Uri? ValetToken { get; set; } // Used to store the valet token
+        [NotMapped]
+        public DateTime? ValetExpiry { get; set; } // Used to quickly check if the valet is still valid
 
         public WeddingSetup? Wedding { get; set; }
     }
