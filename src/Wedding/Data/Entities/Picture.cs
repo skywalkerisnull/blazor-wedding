@@ -33,6 +33,8 @@ namespace Wedding.Data.Entities
         public Uri? ValetToken { get; set; } // Used to store the valet token
         [NotMapped]
         public DateTime? ValetExpiry { get; set; } // Used to quickly check if the valet is still valid
+        [NotMapped]
+        public Uri? ThumbnailValetToken { get; set; } // Used to store the valet token
 
         public WeddingSetup? Wedding { get; set; }
     }
