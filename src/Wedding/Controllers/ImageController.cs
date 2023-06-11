@@ -1,15 +1,11 @@
-﻿using DocumentFormat.OpenXml.InkML;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections;
-using System.Formats.Tar;
-using System.IO.Packaging;
 using System.Security.Cryptography;
-using System.Security.Policy;
 using Wedding.Data;
 using Wedding.Data.Entities;
+using Wedding.Services;
 
 namespace Wedding.Controllers
 {
@@ -82,60 +78,33 @@ namespace Wedding.Controllers
         {
             var mimeType = file.ContentType;
             var extension = Path.GetExtension(file.FileName);
-            var fileName = $"{Guid.NewGuid()}{extension}";
-            
-            FileInfo dir = new FileInfo(Path.Combine(_environment.WebRootPath, "images"));
-            dir.Directory.Create();
 
-            // TODO: refactor this so that the DB aspect is in a seperate method.
-            await using var context = await _contextFactory.CreateDbContextAsync();
+            var pictureService = _serviceProvider.GetService<IPictureService>();
+            var picture = await pictureService.UploadImageAsync(file.OpenReadStream(), file.FileName);
 
-            try
+            if (Array.IndexOf(_imageMimetypes, mimeType) >= 0 && (Array.IndexOf(_imageExt, extension) >= 0))
             {
-                if (Array.IndexOf(_imageMimetypes, mimeType) >= 0 && (Array.IndexOf(_imageExt, extension) >= 0))
+                try
                 {
-                    var filePath = Path.Combine(_environment.WebRootPath, "images", fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    return Ok(new
                     {
-                        file.CopyTo(stream);
-                        var url = Url.Content($"~/images/{fileName}");
+                        Url = picture.FileUrl.ToString(),
+                        Id = picture.PictureId.ToString()
+                    });
 
-                        byte[] hash;
-                        using (var md5 = MD5.Create())
-                        {
-                            using (var streamReader = new StreamReader(file.OpenReadStream()))
-                            {
-                                hash = md5.ComputeHash(streamReader.BaseStream);
-                            }
-                        }
-
-                        var picture = new Picture()
-                        {
-                            PictureId = Guid.NewGuid(),
-                            FileSize = (uint)file.Length,
-                            OriginalFileName = file.FileName,
-                            FileHash = hash,
-                            DateTimeUploadedUtc = DateTime.UtcNow,
-                            FileName = fileName,
-                            FilePath = filePath,
-                            FileUrl = new Uri(url),
-                        };
-
-                        context.Pictures.Add(picture);
-                        await context.SaveChangesAsync();
-                        return Ok(new { 
-                            Url = url,
-                            Id = picture.PictureId.ToString()
-                        });
-                    }
                 }
-                throw new ArgumentException("The image did not pass the validation");
+
+                catch (Exception ex)
+                {
+                    return StatusCode(500, ex.Message);
+                }
+
+            }
+            else
+            {
+                return StatusCode(422, "Invalid file format");
             }
 
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
         }
 
         [Authorize]

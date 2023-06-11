@@ -1,7 +1,6 @@
 ﻿using Wedding.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Wedding.Data;
-using SixLabors;
 using SkiaSharp;
 
 namespace Wedding.Services
@@ -111,6 +110,9 @@ namespace Wedding.Services
             var newFileName = $"{pictureId}{Path.GetExtension(fileName)}";
             var filePath = Path.Combine("images", newFileName);
 
+            FileInfo dir = new FileInfo(Path.Combine(_environment.WebRootPath, "images"));
+            dir.Directory.Create();
+
             // Save the image file to the server
             var fileUrl = new Uri($"{_environment.WebRootPath}/{filePath}");
             using (var fileStream = new FileStream(fileUrl.AbsolutePath, FileMode.Create))
@@ -160,8 +162,40 @@ namespace Wedding.Services
             await using var context = await _contextFactory.CreateDbContextAsync();
             context.Pictures.Add(picture);
             await context.SaveChangesAsync();
-
             return picture;
+
+            //if (Array.IndexOf(_imageMimetypes, mimeType) >= 0 && (Array.IndexOf(_imageExt, extension) >= 0))
+            //{
+            //    var filePath = Path.Combine(_environment.WebRootPath, "images", fileName);
+            //    using (var stream = new FileStream(filePath, FileMode.Create))
+            //    {
+            //        file.CopyTo(stream);
+            //        var url = Url.Content($"~/images/{fileName}");
+
+            //        byte[] hash;
+            //        using (var md5 = MD5.Create())
+            //        {
+            //            using (var streamReader = new StreamReader(file.OpenReadStream()))
+            //            {
+            //                hash = md5.ComputeHash(streamReader.BaseStream);
+            //            }
+            //        }
+
+            //        var picture = new Picture()
+            //        {
+            //            PictureId = Guid.NewGuid(),
+            //            FileSize = (uint)file.Length,
+            //            OriginalFileName = file.FileName,
+            //            FileHash = hash,
+            //            DateTimeUploadedUtc = DateTime.UtcNow,
+            //            FileName = fileName,
+            //            FilePath = filePath,
+            //            FileUrl = new Uri(url),
+            //        };
+
+            //        context.Pictures.Add(picture);
+            //        await context.SaveChangesAsync();
+            //    }
         }
 
         private async Task<byte[]> GetFileHashAsync(Uri fileUrl)
@@ -238,28 +272,5 @@ namespace Wedding.Services
             await context.SaveChangesAsync();
         }
 
-        //private async Task GenerateThumbnailAsync(Uri fileUrl, Uri thumbnailUrl)
-        //{
-        //    // Use an image library to resize and save the thumbnail image
-        //    using (var image = SixLabors.ImageSharp.Image.Load(fileUrl.AbsolutePath))
-        //    {
-        //        var options = new SixLabors.ImageSharp.Processing.ResizeOptions
-        //        {
-        //            Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max,
-        //            Size = new SixLabors.ImageSharp.Size(200, 200)
-        //        };
-        //        image.Mutate(x => x.Resize(options));
-        //        await image.SaveAsync(thumbnailUrl.AbsolutePath);
-        //    }
-        //}
-
-        //private async Task<Tuple<uint, uint>> GetImageDimensionsAsync(Uri fileUrl)
-        //{
-        //    // Use an image library to get the width and height of the image
-        //    using (var image = SixLabors.ImageSharp.Image.Load(fileUrl.AbsolutePath))
-        //    {
-        //        return new Tuple<uint, uint>((uint)image.Width, (uint)image.Height);
-        //    }
-        //}
     }
 }

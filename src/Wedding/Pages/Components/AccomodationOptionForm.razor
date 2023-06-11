@@ -1,6 +1,7 @@
 ﻿@using PhoneNumbers
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components;
+@using System.Net.Http.Headers;
 @using Wedding.Models
 @using Wedding.Services
 
@@ -29,7 +30,7 @@
                         <MudTextField Label="Phone Number" InputType="@InputType.Telephone" @bind-Value="@accomPhone" For="@(() => accomPhone)" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudFileUpload T="IBrowserFile" Context="fileInput" FilesChanged="UploadFiles" MaxFiles="1">
+                        <MudFileUpload T="IBrowserFile" Context="fileInput" FilesChanged="UploadFiles" MaxFiles="1" Accept="image/*">
                         <ButtonTemplate>
                             <MudButton 
                                 HtmlTag="label" 
@@ -83,7 +84,25 @@
 
     private async Task UploadFiles(IBrowserFile file)
     {
-        // TODO upload the file to the server
+        // Create a request object with the file content
+        var request = new HttpRequestMessage(HttpMethod.Post, "api/Image/upload");
+        request.Content = new StreamContent(file.OpenReadStream());
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+        // Send the request to the api controller
+        var response = await Http.SendAsync(request);
+
+        // Check the response status
+        if (response.IsSuccessStatusCode)
+        {
+            // Do something with the response, such as displaying a success message
+            Console.WriteLine("File uploaded successfully.");
+        }
+        else
+        {
+            // Handle the error, such as displaying an error message
+            Console.WriteLine("File upload failed: " + response.ReasonPhrase);
+        }
     }
 
     // Get the option from the dialog parameters

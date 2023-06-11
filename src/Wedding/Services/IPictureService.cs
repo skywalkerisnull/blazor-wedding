@@ -13,5 +13,6 @@ namespace Wedding.Services
         public Task DeletePictureAsync(Guid pictureId);
         public Task<Picture> ReplacePicture(Guid originalPictureId, Guid replacementPictureId);
         public Task UpdatePictureAsync(Picture picture);
+        public Task<Picture> UploadImageAsync(Stream imageStream, string fileName);
     }
 }
