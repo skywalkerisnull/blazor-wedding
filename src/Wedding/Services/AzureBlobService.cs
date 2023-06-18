@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Wedding.Services
 {
@@ -45,6 +46,14 @@ namespace Wedding.Services
 
             // Get a reference to the blob
             BlobClient blobClient = containerClient.GetBlobClient(filePath.ToString());
+
+            // TODO: Look into how to set the caching
+            //https://stackoverflow.com/questions/46898761/azure-blob-sas-and-cache-control-to-ensure-that-resources-are-cached
+            //var policy = new SharedAccessBlobPolicy();
+            //var headers = new SharedAccessBlobHeaders() { CacheControl = "max-age=" + MaxCacheAgeInDays * 24 * 60 * 60 };
+            //var blockBlob = _container.GetBlockBlobReference(name);
+
+            //var result = _baseUrl + blobName + blockBlob.GetSharedAccessSignature(policy, headers);
 
             // Check if the blob exists
             if (await blobClient.ExistsAsync())

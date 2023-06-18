@@ -13,12 +13,10 @@ namespace Wedding.Data.Entities
         public required byte[] FileHash { get; set; }
         public DateTime DateTimeUploadedUtc { get; set; }
         public required string FileName { get; set; }
-        public required string FilePath { get; set; }
+        public required Uri Permalink { get; set; } // The realtive path of the file
         public required Uri FileUrl { get; set; }
-
         public required uint FileSize { get; set; }
-        public string? ThumbnailFilePath { get; set; }
-        public Uri? ThumbnailUrl { get; set; }
+        public required Uri ThumbnailUrl { get; set; }
         public uint? ThumbnailSize { get; set; }
 
         public uint? PixelsX { get; set; }
