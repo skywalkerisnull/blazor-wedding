@@ -4,8 +4,7 @@
 @using Wedding.Services
 @inject IPictureService PictureService
 @inject IDialogService dialogService
-@inject NavigationManager NavigationManager
-@inject HttpClient Http
+@inject NavigationManager _navigationManager
 
 <MudGrid>
     <MudItem xs="12">
@@ -118,7 +117,12 @@
         var stream = file.OpenReadStream();
         var content = new MultipartFormDataContent();
         content.Add(new StreamContent(stream), "file", file.Name);
-        var response = await Http.PostAsync("upload", content);
+
+        var client = new HttpClient();
+        
+        client.BaseAddress = new Uri(_navigationManager.BaseUri);
+        var response = await client.PostAsync("api/image/upload", content);
+
         Guid pictureId = Guid.Empty;
         if (response.IsSuccessStatusCode)
         {

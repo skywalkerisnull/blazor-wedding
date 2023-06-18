@@ -12,8 +12,8 @@ using Wedding.Data;
 namespace Wedding.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230428104247_pictures")]
-    partial class pictures
+    [Migration("20230618052100_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -240,6 +240,48 @@ namespace Wedding.Migrations
                     b.ToTable("PostTag");
                 });
 
+            modelBuilder.Entity("Wedding.Data.Entities.AccomodationOptions", b =>
+                {
+                    b.Property<Guid>("AccomodationOptionsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AccomodationDescription")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("AccomodationName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AccomodationType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AccomodationUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PictureId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WeddingSetupId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("AccomodationOptionsId");
+
+                    b.HasIndex("PictureId");
+
+                    b.HasIndex("WeddingSetupId");
+
+                    b.ToTable("AccomodationOptions");
+                });
+
             modelBuilder.Entity("Wedding.Data.Entities.Category", b =>
                 {
                     b.Property<Guid>("CategoryId")
@@ -323,7 +365,7 @@ namespace Wedding.Migrations
                     b.Property<string>("Other")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("PartyId")
+                    b.Property<Guid?>("PartyId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("PictureId")
@@ -366,10 +408,15 @@ namespace Wedding.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("WeddingSetupId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("PageId");
 
                     b.HasIndex("Slug")
                         .IsUnique();
+
+                    b.HasIndex("WeddingSetupId");
 
                     b.ToTable("Pages");
 
@@ -413,7 +460,12 @@ namespace Wedding.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("WeddingSetupId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("PartyId");
+
+                    b.HasIndex("WeddingSetupId");
 
                     b.ToTable("Party");
                 });
@@ -424,11 +476,16 @@ namespace Wedding.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AlternativeText")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
                     b.Property<DateTime>("DateTimeUploadedUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FileDescription")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<byte[]>("FileHash")
                         .IsRequired()
@@ -438,9 +495,8 @@ namespace Wedding.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("FileUrl")
                         .IsRequired()
@@ -450,7 +506,29 @@ namespace Wedding.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Permalink")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long?>("PixelsX")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("PixelsY")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ThumbnailSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("WeddingSetupId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("PictureId");
+
+                    b.HasIndex("WeddingSetupId");
 
                     b.ToTable("Pictures");
                 });
@@ -468,6 +546,29 @@ namespace Wedding.Migrations
                     b.HasKey("TagId");
 
                     b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("Wedding.Data.Entities.WeddingSetup", b =>
+                {
+                    b.Property<Guid>("WeddingSetupId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PartnerOneId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartnerTwoId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("WeddingSetupId");
+
+                    b.HasIndex("PartnerOneId");
+
+                    b.HasIndex("PartnerTwoId");
+
+                    b.ToTable("WeddingSetups");
                 });
 
             modelBuilder.Entity("Wedding.Data.Entities.Post", b =>
@@ -548,6 +649,25 @@ namespace Wedding.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Wedding.Data.Entities.AccomodationOptions", b =>
+                {
+                    b.HasOne("Wedding.Data.Entities.Picture", "Picture")
+                        .WithMany()
+                        .HasForeignKey("PictureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Wedding.Data.Entities.WeddingSetup", "WeddingSetup")
+                        .WithMany()
+                        .HasForeignKey("WeddingSetupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Picture");
+
+                    b.Navigation("WeddingSetup");
+                });
+
             modelBuilder.Entity("Wedding.Data.Entities.Comment", b =>
                 {
                     b.HasOne("Wedding.Data.Entities.Post", "Post")
@@ -571,9 +691,7 @@ namespace Wedding.Migrations
                 {
                     b.HasOne("Wedding.Data.Entities.Party", "Party")
                         .WithMany("Guests")
-                        .HasForeignKey("PartyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PartyId");
 
                     b.HasOne("Wedding.Data.Entities.Picture", "Picture")
                         .WithMany()
@@ -582,6 +700,52 @@ namespace Wedding.Migrations
                     b.Navigation("Party");
 
                     b.Navigation("Picture");
+                });
+
+            modelBuilder.Entity("Wedding.Data.Entities.Page", b =>
+                {
+                    b.HasOne("Wedding.Data.Entities.WeddingSetup", "WeddingSetup")
+                        .WithMany()
+                        .HasForeignKey("WeddingSetupId");
+
+                    b.Navigation("WeddingSetup");
+                });
+
+            modelBuilder.Entity("Wedding.Data.Entities.Party", b =>
+                {
+                    b.HasOne("Wedding.Data.Entities.WeddingSetup", "WeddingSetup")
+                        .WithMany()
+                        .HasForeignKey("WeddingSetupId");
+
+                    b.Navigation("WeddingSetup");
+                });
+
+            modelBuilder.Entity("Wedding.Data.Entities.Picture", b =>
+                {
+                    b.HasOne("Wedding.Data.Entities.WeddingSetup", "Wedding")
+                        .WithMany()
+                        .HasForeignKey("WeddingSetupId");
+
+                    b.Navigation("Wedding");
+                });
+
+            modelBuilder.Entity("Wedding.Data.Entities.WeddingSetup", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "PartnerOne")
+                        .WithMany()
+                        .HasForeignKey("PartnerOneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "PartnerTwo")
+                        .WithMany()
+                        .HasForeignKey("PartnerTwoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PartnerOne");
+
+                    b.Navigation("PartnerTwo");
                 });
 
             modelBuilder.Entity("Wedding.Data.Entities.Post", b =>

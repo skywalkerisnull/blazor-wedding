@@ -492,10 +492,6 @@ namespace Wedding.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
 
@@ -507,19 +503,21 @@ namespace Wedding.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Permalink")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<long?>("PixelsX")
                         .HasColumnType("bigint");
 
                     b.Property<long?>("PixelsY")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("ThumbnailFilePath")
-                        .HasColumnType("text");
-
                     b.Property<long?>("ThumbnailSize")
                         .HasColumnType("bigint");
 
                     b.Property<string>("ThumbnailUrl")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid?>("WeddingSetupId")

@@ -11,6 +11,8 @@ using Radzen;
 using BlazorDownloadFile;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,7 +80,17 @@ app.UseAuthorization();
 app.UseMiddleware<BlazorCookieLoginMiddleware>();
 
 app.MapControllers();
+app.MapControllerRoute(
+    name: "image",
+    pattern: "api/image/upload",
+    defaults: new { controller = "Image", action = "Image" });
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();

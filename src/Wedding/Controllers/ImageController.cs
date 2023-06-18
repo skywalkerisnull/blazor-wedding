@@ -130,23 +130,23 @@ namespace Wedding.Controllers
 
 
         // GET: /project-id/image-id
-        public async Task<ActionResult> Index(string projectId, string imageId)
-        {
-            // Validate the parameters
-            if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(imageId))
-            {
-                return StatusCode(400, HttpStatusCode.BadRequest);
-            }
+        //public async Task<ActionResult> Index(string projectId, string imageId)
+        //{
+        //    // Validate the parameters
+        //    if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(imageId))
+        //    {
+        //        return StatusCode(400, HttpStatusCode.BadRequest);
+        //    }
 
-            var pictureService = _serviceProvider.GetService<IPictureService>();
-            var picture = await pictureService.GetPictureAsync(Guid.Parse(imageId));
+        //    var pictureService = _serviceProvider.GetService<IPictureService>();
+        //    var picture = await pictureService.GetPictureAsync(Guid.Parse(imageId));
 
-            var storageService = _serviceProvider.GetService<IFileStorageService>();
-            var fileUrl = await storageService.GetFileValet(picture.FileUrl);
+        //    var storageService = _serviceProvider.GetService<IFileStorageService>();
+        //    var fileUrl = await storageService.GetFileValet(picture.FileUrl);
 
-            // Return a temporary redirect to the blob URL
-            return RedirectPreserveMethod(fileUrl.ToString());
-        }
+        //    // Return a temporary redirect to the blob URL
+        //    return RedirectPreserveMethod(fileUrl.ToString());
+        //}
     }
 }
 
