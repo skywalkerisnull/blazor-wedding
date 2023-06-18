@@ -11,8 +11,13 @@ using Radzen;
 using BlazorDownloadFile;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// adding an appsettings that allows for local development, but will not be pushed to the repo.
+builder.Configuration.AddJsonFile("appsettings.local.json", true, true);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -41,7 +46,10 @@ builder.Services.AddTransient<IValidator<RegisterModel>, RegisterModelValidator>
 
 builder.Services.AddScoped<IGuestService, GuestService>();
 builder.Services.AddScoped<IPartyService, PartyService>();
+builder.Services.AddScoped<IPictureService, PictureService>();
+builder.Services.AddScoped<IAccomodationService, AccomodationService>();
 builder.Services.AddScoped<ImageController>();
+builder.Services.AddScoped<IFileStorageService, AzureBlobService>();
 
 
 builder.Services.AddScoped<DialogService>();
@@ -72,7 +80,17 @@ app.UseAuthorization();
 app.UseMiddleware<BlazorCookieLoginMiddleware>();
 
 app.MapControllers();
+app.MapControllerRoute(
+    name: "image",
+    pattern: "api/image/upload",
+    defaults: new { controller = "Image", action = "Image" });
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();

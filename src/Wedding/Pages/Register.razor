@@ -21,15 +21,16 @@
 @inject IConfiguration _Configuration
 @inject IJSRuntime JsRuntime
 
-@if (_Configuration.GetValue("AllowAccountRegistration", false)){
-<h2>Login or Register</h2>
-}
-else{
-<h2>Login</h2>
-}
-
 <AuthorizeView>
     <NotAuthorized>
+        @if (_Configuration.GetValue("AllowAccountRegistration", false))
+        {
+            <h2>Login or Register</h2>
+        }
+        else
+        {
+            <h2>Login</h2>
+        }
         <MudTabs>
             <MudTabPanel Text="Login">
                 <h3>Login</h3>

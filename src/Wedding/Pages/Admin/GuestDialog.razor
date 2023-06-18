@@ -5,7 +5,7 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="form" Model="@guest">
+        <MudForm @ref="_form" Model="@guest">
             <MudItem xs="12" sm="6">
                 <MudTextField Label="First Name" @bind-Value="@guest.FirstName" For="@(() => guest.FirstName)" Required="true"/>
             </MudItem>
@@ -37,7 +37,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="@Cancel">Cancel</MudButton>
-        <MudButton OnClick="@Save" Disabled="@(!form.IsValid)">Save</MudButton>
+        <MudButton OnClick="@Save" Disabled="@(!_form.IsValid)">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -48,7 +48,7 @@
 
     [Parameter] public Guest guest { get; set; }
 
-    private MudForm form;
+    private MudForm _form;
 
 
     protected override void OnInitialized()

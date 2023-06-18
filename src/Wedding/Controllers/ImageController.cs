@@ -1,15 +1,13 @@
-﻿using DocumentFormat.OpenXml.InkML;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections;
-using System.Formats.Tar;
-using System.IO.Packaging;
+using System.Net;
 using System.Security.Cryptography;
-using System.Security.Policy;
 using Wedding.Data;
 using Wedding.Data.Entities;
+using Wedding.Services;
 
 namespace Wedding.Controllers
 {
@@ -24,8 +22,8 @@ namespace Wedding.Controllers
         private readonly IServiceProvider _serviceProvider;
         private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        private static string[] _imageMimetypes = {"image/gif", "image/jpeg", "image/pjpeg", "image/x-png", "image/png", "image/svg+xml"};
-        private static string[] _imageExt = { ".gif", ".jpeg", ".jpg", ".png", ".svg", ".blob" };
+        private static readonly string[] _imageMimetypes = {"image/gif", "image/jpeg", "image/pjpeg", "image/x-png", "image/png", "image/svg+xml"};
+        private static readonly string[] _imageExt = { ".gif", ".jpeg", ".jpg", ".png", ".svg", ".blob" };
         public ImageController(IWebHostEnvironment environment, IServiceProvider serviceProvider, IDbContextFactory<ApplicationDbContext> dbContextFactory)
         {
             _environment = environment;
@@ -38,6 +36,7 @@ namespace Wedding.Controllers
         public async Task<IActionResult> Post(IFormFile[] files)
         {
             Hashtable location = new Hashtable();
+            var pictureService = _serviceProvider.GetService<PictureService>();
             await using var context = await _contextFactory.CreateDbContextAsync();
             foreach (var file in files)
             {
@@ -53,16 +52,7 @@ namespace Wedding.Controllers
                     }
                 }
 
-                var picture = new Picture()
-                {
-                    PictureId = Guid.NewGuid(),
-                    OriginalFileName = file.FileName,
-                    FileHash = hash,
-                    DateTimeUploadedUtc = DateTime.UtcNow,
-                    FileName = file.FileName,
-                    FilePath = "",
-                    FileUrl = new Uri(""),
-                };
+                var picture = await pictureService.UploadImageAsync(file.OpenReadStream(), file.FileName);
 
                 context.Pictures.Add(picture);
             }
@@ -81,76 +71,82 @@ namespace Wedding.Controllers
         {
             var mimeType = file.ContentType;
             var extension = Path.GetExtension(file.FileName);
-            var fileName = $"{Guid.NewGuid()}{extension}";
-            
-            FileInfo dir = new FileInfo(Path.Combine(_environment.WebRootPath, "images"));
-            dir.Directory.Create();
 
-            // TODO: refactor this so that the DB aspect is in a seperate method.
-            await using var context = await _contextFactory.CreateDbContextAsync();
+            var pictureService = _serviceProvider.GetService<IPictureService>();
+            var picture = await pictureService.UploadImageAsync(file.OpenReadStream(), file.FileName);
 
-            try
+            if (Array.IndexOf(_imageMimetypes, mimeType) >= 0 && (Array.IndexOf(_imageExt, extension) >= 0))
             {
-                if (Array.IndexOf(_imageMimetypes, mimeType) >= 0 && (Array.IndexOf(_imageExt, extension) >= 0))
+                try
                 {
-                    var filePath = Path.Combine(_environment.WebRootPath, "images", fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    return Ok(new
                     {
-                        file.CopyTo(stream);
-                        var url = Url.Content($"~/images/{fileName}");
+                        Url = picture.Permalink.ToString(),
+                        Id = picture.PictureId.ToString()
+                    });
 
-                        byte[] hash;
-                        using (var md5 = MD5.Create())
-                        {
-                            using (var streamReader = new StreamReader(file.OpenReadStream()))
-                            {
-                                hash = md5.ComputeHash(streamReader.BaseStream);
-                            }
-                        }
-
-                        var picture = new Picture()
-                        {
-                            PictureId = Guid.NewGuid(),
-                            OriginalFileName = file.FileName,
-                            FileHash = hash,
-                            DateTimeUploadedUtc = DateTime.UtcNow,
-                            FileName = fileName,
-                            FilePath = filePath,
-                            FileUrl = new Uri(url),
-                        };
-
-                        context.Pictures.Add(picture);
-                        await context.SaveChangesAsync();
-                        return Ok(new { Url = url });
-                    }
                 }
-                throw new ArgumentException("The image did not pass the validation");
+
+                catch (Exception ex)
+                {
+                    return StatusCode(500, ex.Message);
+                }
+
+            }
+            else
+            {
+                return StatusCode(422, "Invalid file format");
             }
 
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
         }
 
         [Authorize]
         [HttpGet("{fileName}")]
-        public IActionResult Download(string fileName)
+        public async Task<IActionResult> Download(string fileName)
         {
             if (string.IsNullOrEmpty(fileName) || fileName.Contains(".."))
             {
                 return BadRequest("Invalid file name");
             }
 
-            var filePath = Path.Combine(_environment.WebRootPath, "images", fileName);
+            var fileId = Guid.Parse(Path.GetFileNameWithoutExtension(fileName));
 
-            if (!System.IO.File.Exists(filePath))
-            {
-                return NotFound("File not found");
-            }
+            var pictureService = _serviceProvider.GetService<IPictureService>();
 
-            return File(System.IO.File.OpenRead(filePath), "image/jpeg");
+            var picture = await pictureService.GetPictureAsync(fileId);
+            
+            var fileService = _serviceProvider.GetService<IFileStorageService>();
+            var valetUri = await fileService.GetFileValet(picture.FileUrl);
+
+            return RedirectTemporary(valetUri.ToString());
         }
+
+        private IActionResult RedirectTemporary(string location)
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.TemporaryRedirect);
+            response.Headers.Location = new Uri(location);
+            return new ObjectResult(response);
+        }
+
+
+        // GET: /project-id/image-id
+        //public async Task<ActionResult> Index(string projectId, string imageId)
+        //{
+        //    // Validate the parameters
+        //    if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(imageId))
+        //    {
+        //        return StatusCode(400, HttpStatusCode.BadRequest);
+        //    }
+
+        //    var pictureService = _serviceProvider.GetService<IPictureService>();
+        //    var picture = await pictureService.GetPictureAsync(Guid.Parse(imageId));
+
+        //    var storageService = _serviceProvider.GetService<IFileStorageService>();
+        //    var fileUrl = await storageService.GetFileValet(picture.FileUrl);
+
+        //    // Return a temporary redirect to the blob URL
+        //    return RedirectPreserveMethod(fileUrl.ToString());
+        //}
     }
 }
 

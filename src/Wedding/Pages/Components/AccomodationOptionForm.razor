@@ -1,0 +1,169 @@
+﻿@using PhoneNumbers
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components;
+@using System.Net.Http.Headers;
+@using Wedding.Models
+@using Wedding.Services
+
+@inject IDialogService DialogService
+@inject HttpClient Http
+@inject IPictureService PictureService
+
+<AuthorizeView>
+    <Authorized>
+        <MudDialog>
+            <DialogContent>
+                <MudForm @ref="_form" Model="@Option">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Accomodation Name" @bind-Value="@Option.AccomodationName" For="@(() => Option.AccomodationName)" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Accomodation Type" @bind-Value="@Option.AccomodationType" For="@(() => Option.AccomodationType)" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="Accomodation Description" @bind-Value="@Option.AccomodationDescription" For="@(() => Option.AccomodationDescription)" Required="true" Lines="3" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="Accomodation URL" InputType="@InputType.Url" @bind-Value="@accomUrl" For="@(() => accomUrl)" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Label="Phone Number" InputType="@InputType.Telephone" @bind-Value="@accomPhone" For="@(() => accomPhone)" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudFileUpload T="IBrowserFile" Context="fileInput" FilesChanged="UploadFiles" MaxFiles="1" Accept="image/*">
+                        <ButtonTemplate>
+                            <MudButton 
+                                HtmlTag="label" 
+                                Variant="Variant.Filled" 
+                                Color="Color.Primary" 
+                                StartIcon="@Icons.Material.Filled.CloudUpload" 
+                                for="@fileInput"> Upload Picture </MudButton>
+                        </ButtonTemplate>
+                        </MudFileUpload>
+
+                    <MudSwitch Label="Select existing picture" @bind-Checked="@selectExisting" />
+
+                    @if (selectExisting)
+                    {
+                        <MudSelect Label="Picture URL" @bind-Value="@selectedUrl">
+                            @foreach (var url in pictureUrls)
+                            {
+                                <MudSelectItem Value="@url">@url</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    </MudItem>
+                </MudForm>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Color="Color.Primary" OnClick="@Save">Save</MudButton>
+                <MudButton Color="Color.Default" OnClick="@Cancel">Cancel</MudButton>
+            </DialogActions>
+        </MudDialog>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+    private MudForm _form;
+    [Parameter]  public AccomodationOptions Option { get; set; }
+    //private IEnumerable<IBrowserFile> Files;
+
+    private string accomUrl = "";
+    private string accomPhone = "";
+
+    IList<IBrowserFile> Files { get; set; }
+    bool selectExisting { get; set; }
+    Uri selectedUrl { get; set; }
+    List<Uri> pictureUrls { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        pictureUrls = await PictureService.GetAllPictureUrls();
+    }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        // Create a request object with the file content
+        var request = new HttpRequestMessage(HttpMethod.Post, "api/Image/upload");
+        request.Content = new StreamContent(file.OpenReadStream());
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+        // Send the request to the api controller
+        var response = await Http.SendAsync(request);
+
+        // Check the response status
+        if (response.IsSuccessStatusCode)
+        {
+            // Do something with the response, such as displaying a success message
+            Console.WriteLine("File uploaded successfully.");
+        }
+        else
+        {
+            // Handle the error, such as displaying an error message
+            Console.WriteLine("File upload failed: " + response.ReasonPhrase);
+        }
+    }
+
+    // Get the option from the dialog parameters
+    protected override void OnInitialized()
+    {
+
+        if (Option is null)
+        {
+            Option = new AccomodationOptions();
+        }
+    }
+
+    // Save the option and close the dialog
+    private async Task Save()
+    {
+        if (_form.IsValid)
+        {
+            Option.AccomodationUrl = new Uri(accomUrl);
+            PhoneNumberUtil phoneUtil = PhoneNumberUtil.GetInstance();
+            try
+            {
+                Option.PhoneNumber = phoneUtil.Parse(accomPhone, "AU");
+            }
+            catch (NumberParseException e)
+            {
+                Console.WriteLine($"Error with phone number {e}");
+            }
+
+            // Upload the picture file to a service or a database
+            if (Files != null && Files.Any())
+            {
+                var file = Files.First();
+                var stream = file.OpenReadStream();
+                var content = new MultipartFormDataContent();
+                content.Add(new StreamContent(stream), "file", file.Name);
+                var response = await Http.PostAsync("upload", content);
+                // Check if the response is successful
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response content as a JSON object
+                    var json = await response.Content.ReadFromJsonAsync<UploadResult>();
+                    Option.Picture.PictureId = Guid.Parse(json.Id);
+                }
+                else
+                {
+                    Console.WriteLine($"Upload failed: {response.ReasonPhrase}");
+                }
+            }
+            Dialog.Close(DialogResult.Ok(Option));
+        }
+    }
+
+    // Cancel the dialog
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+    public class UploadResult
+    {
+        public string Url { get; set; }
+        public string Id { get; set; }
+    }
+}

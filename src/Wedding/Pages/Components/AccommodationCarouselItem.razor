@@ -1,0 +1,19 @@
+﻿@using PhoneNumbers
+
+<MudCarouselItem>
+    <img src="@ImageUrl" alt="Hotel @AccomodationName" />
+    <div class="mud-typography mud-display1">@AccomodationName</div>
+    <div class="mud-typography mud-body2">@Description</div>
+    <a href="@UrlLink">Website</a>
+    <div>@PhoneNumber.ToString()</div>
+    <div>@Address</div>
+</MudCarouselItem>
+
+@code {
+    public Uri ImageUrl { get; set; }
+    public string AccomodationName { get; set; }
+    public string Description { get; set; }
+    public Uri UrlLink { get; set; }
+    public PhoneNumber PhoneNumber { get; set; }
+    public string Address { get; set; }
+}

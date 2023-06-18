@@ -348,3 +348,7 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Dotnet appsettings prevent the pushing of any appsettings that may contain private information
+
+**/appsettings.*.json
